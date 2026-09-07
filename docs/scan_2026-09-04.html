@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kullamagi scan &middot; 2026-09-04</title>
+<style>
+:root{--bg:#0d1117;--panel:#161b22;--panel2:#1c232b;--border:#30363d;--text:#e6edf3;
+  --muted:#8b949e;--accent:#1f6feb;--blue:#60a5fa;--green:#4ade80;--red:#f87171;
+  --yellow:#fbbf24;--purple:#c084fc}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.55}
+.wrap{max-width:1180px;margin:0 auto;padding:0 18px 70px}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+h1{margin:0;font-size:26px;letter-spacing:-.01em}
+h2{margin:34px 0 12px;font-size:16px;text-transform:uppercase;letter-spacing:.12em;
+  color:var(--muted);font-weight:600}
+header.top{padding:26px 0 18px;border-bottom:1px solid var(--border);
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:14px}
+header.top .sub{color:var(--muted);font-size:13.5px}
+header.top .spacer{flex:1}
+.mono{font-family:'Cascadia Mono',Consolas,monospace}
+
+.regime{margin-top:18px;border-radius:8px;padding:15px 18px;border:1px solid var(--border);
+  background:var(--panel);display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.regime.on{border-left:4px solid var(--green)}
+.regime.off{border-left:4px solid var(--red)}
+.regime .state{font-size:19px;font-weight:700;letter-spacing:.02em}
+.regime.on .state{color:var(--green)}.regime.off .state{color:var(--red)}
+.regime .detail{color:var(--muted);font-size:13px}
+.regime .chk{display:inline-block;margin-right:12px}
+.regime .y{color:var(--green)}.regime .n{color:var(--red)}
+
+.caveat{margin-top:14px;border:1px solid #4a3a12;background:#221a09;border-radius:8px;
+  padding:13px 17px;font-size:13.5px;color:#e8d5a8}
+.caveat b{color:var(--yellow)}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(122px,1fr));gap:1px;
+  background:var(--border);border:1px solid var(--border);border-radius:8px;
+  overflow:hidden;margin-top:16px}
+.stats div{background:var(--panel);padding:11px 13px}
+.stats .k{font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
+.stats .v{font-size:21px;font-weight:700;margin-top:3px}
+
+.cards{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:900px){.cards.two{grid-template-columns:1fr 1fr}}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:9px;
+  overflow:hidden}
+.card.cand{border-left:4px solid var(--green)}
+.card.gated{border-left:4px solid var(--red)}
+.card.watch{border-left:4px solid var(--yellow)}
+.card.stale{border-left-color:var(--muted);opacity:.72}
+.card.stale .plan .v.buy{color:var(--muted)}
+.card header{padding:12px 15px 9px;display:flex;flex-wrap:wrap;
+  gap:6px 10px;align-items:baseline;border-bottom:1px solid var(--border)}
+.card .meta{flex:1 1 100%;order:9}
+.card .badges{margin-left:auto}
+.card .tk{font-size:20px;font-weight:700;letter-spacing:.01em}
+.card .px{font-size:15px;color:var(--muted)}
+.card .meta{font-size:12px;color:var(--muted)}
+.chartwrap{padding:6px 10px 0}
+svg.cx{display:block;width:100%;height:auto}
+.basezone{fill:#ffffff;opacity:.045}
+.riskband{fill:var(--red);opacity:.10}
+.bup{fill:var(--green)}.wup{stroke:var(--green);stroke-width:1}
+.bdn{fill:var(--red)}.wdn{stroke:var(--red);stroke-width:1}
+.ma10{fill:none;stroke:var(--yellow);stroke-width:1.3}
+.ma21{fill:none;stroke:var(--blue);stroke-width:1.3}
+.lvbuy{stroke:var(--green);stroke-width:1.5}
+.lvstop{stroke:var(--red);stroke-width:1.4;stroke-dasharray:5 4}
+text.tbuy{fill:var(--green);font-size:10.5px;font-weight:700;
+  font-family:'Cascadia Mono',Consolas,monospace}
+text.tstop{fill:var(--red);font-size:10.5px;font-weight:700;
+  font-family:'Cascadia Mono',Consolas,monospace}
+.mom{padding:4px 15px 0;font-size:12px;color:var(--muted)}
+.why{margin:9px 15px 0;padding:8px 11px;background:var(--panel2);border-radius:6px;
+  font-size:12.5px;color:var(--muted)}
+.plan{margin:11px 15px 0;display:grid;gap:1px;background:var(--border);
+  border:1px solid var(--border);border-radius:7px;overflow:hidden}
+.plan .pl{background:var(--panel2);padding:8px 12px;display:grid;
+  grid-template-columns:104px auto 1fr;gap:11px;align-items:baseline}
+.plan .k{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.plan .v{font-family:'Cascadia Mono',Consolas,monospace;font-size:16px;font-weight:700}
+.plan .v.buy{color:var(--green)}.plan .v.stop{color:var(--red)}
+.plan .v.tgt{color:var(--purple)}
+.plan .n{font-size:12px;color:var(--muted)}
+.manage{margin:9px 15px 14px;font-size:12.5px;color:var(--muted);
+  border-left:2px solid var(--border);padding-left:10px}
+
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;
+  font-weight:700;font-family:'Cascadia Mono',Consolas,monospace}
+.pill.good{background:#0b2b1d;color:var(--green)}
+.pill.ok{background:#0d2436;color:var(--blue)}
+.pill.warn{background:#2b2109;color:var(--yellow)}
+.pill.bad{background:#2d1416;color:var(--red)}
+
+.empty{background:var(--panel);border:1px dashed var(--border);border-radius:9px;
+  padding:22px;color:var(--muted);text-align:center}
+footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--border);
+  color:var(--muted);font-size:12.5px}
+footer p+p{margin-top:8px}
+</style></head><body><div class="wrap">
+
+<header class="top">
+  <h1>Kullam&auml;gi scan</h1>
+  <div class="sub mono">close of Fri 04 Sep 2026 &rarr; for the next US session</div>
+  <div class="spacer"></div>
+  <div class="sub"><a href="https://claude.ai/code/artifact/b34345be-b35b-4337-aa06-34a0be26c806">the playbook</a> &middot; <a href="https://claude.ai/code/artifact/289410ac-2e27-49d3-a9e1-b44f0c069c11">the backtest</a></div>
+</header>
+
+<div class="regime off">
+  <div class="state">STAND ASIDE &mdash; LONGS OFF</div>
+  <div class="detail">The long switch is off, so nothing below is actionable as a long. This is not a signal to go short &mdash; the parabolic setup needs a hot market, not a cold one.<br><span class="chk">10&nbsp;EMA&nbsp;&gt;&nbsp;21&nbsp;EMA <span class="y">yes</span></span><span class="chk">10&nbsp;EMA rising <span class="n">no</span></span><span class="chk">21&nbsp;EMA rising <span class="y">yes</span></span><span class="chk">above 50&nbsp;SMA <span class="y">yes</span></span><br><span class="mono">QQQ 718.96 &middot; 10EMA 714.98 &middot; 21EMA 714.16 &middot; 50SMA 711.09</span></div>
+</div>
+
+<div class="caveat">
+  <b>Read this as a watchlist, not a recommendation.</b> This pattern was placebo-tested on
+  two years of the whole US market and did <b>not</b> beat a matched control
+  (p&nbsp;=&nbsp;0.88); none of 17 hypotheses survived correction, and the 10R+ tail the
+  method depends on never appeared. The scan is here because the rules are objective and
+  worth watching, not because the edge is established. <a href="https://claude.ai/code/artifact/b34345be-b35b-4337-aa06-34a0be26c806">the playbook</a> &middot; <a href="https://claude.ai/code/artifact/289410ac-2e27-49d3-a9e1-b44f0c069c11">the backtest</a>
+</div>
+
+<div class="stats">
+  <div><div class="k">Leaders scanned</div><div class="v">166</div></div>
+  <div><div class="k">Candidates</div><div class="v" style="color:var(--green)">3</div></div>
+  <div><div class="k">Gated out</div><div class="v" style="color:var(--red)">0</div></div>
+  <div><div class="k">Watchlist</div><div class="v" style="color:var(--yellow)">2</div></div>
+  <div><div class="k">Sizing unit</div><div class="v">$10,000</div></div>
+  <div><div class="k">Risk / trade</div><div class="v">0.5%</div></div>
+</div>
+
+<h2>Entry candidates &mdash; <span style="color:var(--red)">NOT ACTIONABLE, regime off</span> &nbsp;<span class="mono">3</span></h2><div class="cards two">
+  <article class="card cand stale">
+    <header>
+      <div class="tk">REPL</div>
+      <div class="px">15.04</div>
+      <div class="meta">ADR 6.3% &middot; $37M/day
+        &middot; base 16d &middot; thrust +184%</div>
+      <div class="badges"><span class="pill warn">regime off &mdash; not actionable</span> <span class="pill ok">0.55x ADR &middot; in check</span></div>
+    </header>
+    <div class="chartwrap"><svg viewBox="0 0 560 190" class="cx" role="img" aria-label="Daily chart with the consolidation shaded, the buy-stop pivot and the initial stop marked.">
+<rect class="riskband" x="6" y="28.0" width="468.0" height="7.1"/>
+<rect class="basezone" x="359.5" y="12" width="115.3" height="162.0"/>
+<polyline class="ma21" points="9.3,174.2 16.0,173.9 22.7,168.7 29.4,163.6 36.1,159.1 42.8,153.7 49.5,148.9 56.1,145.1 62.8,142.2 69.5,139.2 76.2,137.4 82.9,135.6 89.6,133.7 96.3,131.8 102.9,130.4 109.6,127.5 116.3,124.7 123.0,121.0 129.7,117.3 136.4,114.1 143.1,111.4 149.7,108.3 156.4,106.0 163.1,104.1 169.8,102.2 176.5,100.0 183.2,98.2 189.9,96.4 196.5,95.3 203.2,94.3 209.9,93.6 216.6,94.2 223.3,94.8 230.0,95.6 236.7,96.5 243.3,96.5 250.0,96.1 256.7,95.2 263.4,94.7 270.1,94.5 276.8,95.3 283.5,97.4 290.1,103.2 296.8,108.4 303.5,106.1 310.2,103.2 316.9,100.5 323.6,98.2 330.3,94.8 336.9,92.7 343.6,88.8 350.3,85.3 357.0,80.2 363.7,75.7 370.4,71.8 377.1,68.6 383.7,64.6 390.4,61.9 397.1,60.4 403.8,58.1 410.5,56.2 417.2,53.0 423.9,50.1 430.5,47.7 437.2,45.7 443.9,44.2 450.6,42.3 457.3,40.2 464.0,39.1 470.7,38.5"/>
+<polyline class="ma10" points="9.3,170.3 16.0,170.3 22.7,160.6 29.4,151.9 36.1,145.1 42.8,136.8 49.5,130.3 56.1,126.0 62.8,123.6 69.5,121.0 76.2,120.8 82.9,120.3 89.6,119.2 96.3,118.1 102.9,117.6 109.6,114.3 116.3,111.1 123.0,106.1 129.7,101.4 136.4,97.9 143.1,95.4 149.7,92.2 156.4,90.6 163.1,89.5 169.8,88.3 176.5,86.5 183.2,85.2 189.9,84.1 196.5,84.2 203.2,84.2 209.9,84.6 216.6,87.4 223.3,89.9 230.0,92.4 236.7,94.8 243.3,95.1 250.0,94.6 256.7,93.0 263.4,92.3 270.1,92.5 276.8,94.5 283.5,98.7 290.1,110.1 296.8,119.3 303.5,112.7 310.2,105.7 316.9,99.8 323.6,95.3 330.3,89.1 336.9,85.9 343.6,79.4 350.3,74.2 357.0,66.0 363.7,59.4 370.4,54.6 377.1,51.4 383.7,46.6 390.4,44.5 397.1,44.6 403.8,42.9 410.5,41.7 417.2,38.1 423.9,34.9 430.5,33.0 437.2,31.7 443.9,31.1 450.6,29.7 457.3,27.8 464.0,27.9 470.7,28.7"/>
+<line class="wup" x1="9.3" y1="168.1" x2="9.3" y2="173.3"/>
+<rect class="bup" x="7.3" y="170.2" width="4.1" height="1.3"/>
+<line class="wdn" x1="16.0" y1="168.6" x2="16.0" y2="171.5"/>
+<rect class="bdn" x="14.0" y="170.2" width="4.1" height="1.0"/>
+<line class="wup" x1="22.7" y1="111.8" x2="22.7" y2="130.5"/>
+<rect class="bup" x="20.6" y="116.8" width="4.1" height="10.2"/>
+<line class="wup" x1="29.4" y1="99.3" x2="29.4" y2="115.4"/>
+<rect class="bup" x="27.3" y="112.7" width="4.1" height="1.0"/>
+<line class="wdn" x1="36.1" y1="106.1" x2="36.1" y2="119.2"/>
+<rect class="bdn" x="34.0" y="114.0" width="4.1" height="1.0"/>
+<line class="wup" x1="42.8" y1="93.8" x2="42.8" y2="115.4"/>
+<rect class="bup" x="40.7" y="99.6" width="4.1" height="15.8"/>
+<line class="wdn" x1="49.5" y1="87.8" x2="49.5" y2="101.6"/>
+<rect class="bdn" x="47.4" y="99.0" width="4.1" height="2.1"/>
+<line class="wdn" x1="56.1" y1="93.2" x2="56.1" y2="107.5"/>
+<rect class="bdn" x="54.1" y="99.6" width="4.1" height="6.8"/>
+<line class="wdn" x1="62.8" y1="106.7" x2="62.8" y2="116.7"/>
+<rect class="bdn" x="60.8" y="110.0" width="4.1" height="3.1"/>
+<line class="wup" x1="69.5" y1="108.5" x2="69.5" y2="120.4"/>
+<rect class="bup" x="67.4" y="109.5" width="4.1" height="3.1"/>
+<line class="wdn" x1="76.2" y1="110.9" x2="76.2" y2="122.0"/>
+<rect class="bdn" x="74.1" y="112.3" width="4.1" height="7.5"/>
+<line class="wup" x1="82.9" y1="112.8" x2="82.9" y2="122.7"/>
+<rect class="bup" x="80.8" y="117.8" width="4.1" height="2.3"/>
+<line class="wup" x1="89.6" y1="109.1" x2="89.6" y2="118.6"/>
+<rect class="bup" x="87.5" y="114.3" width="4.1" height="3.5"/>
+<line class="wup" x1="96.3" y1="111.6" x2="96.3" y2="116.8"/>
+<rect class="bup" x="94.2" y="113.2" width="4.1" height="2.0"/>
+<line class="wdn" x1="102.9" y1="113.2" x2="102.9" y2="117.7"/>
+<rect class="bdn" x="100.9" y="114.0" width="4.1" height="1.7"/>
+<line class="wup" x1="109.6" y1="93.9" x2="109.6" y2="111.1"/>
+<rect class="bup" x="107.6" y="99.3" width="4.1" height="6.8"/>
+<line class="wup" x1="116.3" y1="93.4" x2="116.3" y2="100.6"/>
+<rect class="bup" x="114.2" y="96.8" width="4.1" height="2.7"/>
+<line class="wup" x1="123.0" y1="80.2" x2="123.0" y2="96.8"/>
+<rect class="bup" x="120.9" y="83.5" width="4.1" height="12.8"/>
+<line class="wup" x1="129.7" y1="69.5" x2="129.7" y2="87.8"/>
+<rect class="bup" x="127.6" y="80.3" width="4.1" height="7.2"/>
+<line class="wdn" x1="136.4" y1="74.4" x2="136.4" y2="83.1"/>
+<rect class="bdn" x="134.3" y="79.8" width="4.1" height="2.5"/>
+<line class="wdn" x1="143.1" y1="75.2" x2="143.1" y2="85.5"/>
+<rect class="bdn" x="141.0" y="82.0" width="4.1" height="2.1"/>
+<line class="wup" x1="149.7" y1="76.2" x2="149.7" y2="100.9"/>
+<rect class="bup" x="147.7" y="77.5" width="4.1" height="18.8"/>
+<line class="wdn" x1="156.4" y1="76.0" x2="156.4" y2="85.9"/>
+<rect class="bdn" x="154.4" y="80.6" width="4.1" height="2.7"/>
+<line class="wdn" x1="163.1" y1="65.9" x2="163.1" y2="86.3"/>
+<rect class="bdn" x="161.0" y="72.5" width="4.1" height="12.4"/>
+<line class="wup" x1="169.8" y1="76.6" x2="169.8" y2="85.4"/>
+<rect class="bup" x="167.7" y="83.0" width="4.1" height="1.6"/>
+<line class="wup" x1="176.5" y1="73.2" x2="176.5" y2="84.7"/>
+<rect class="bup" x="174.4" y="78.2" width="4.1" height="4.5"/>
+<line class="wdn" x1="183.2" y1="75.9" x2="183.2" y2="81.5"/>
+<rect class="bdn" x="181.1" y="78.8" width="4.1" height="1.0"/>
+<line class="wdn" x1="189.9" y1="74.6" x2="189.9" y2="82.7"/>
+<rect class="bdn" x="187.8" y="77.8" width="4.1" height="1.3"/>
+<line class="wdn" x1="196.5" y1="76.8" x2="196.5" y2="88.1"/>
+<rect class="bdn" x="194.5" y="79.5" width="4.1" height="4.8"/>
+<line class="wdn" x1="203.2" y1="81.6" x2="203.2" y2="87.3"/>
+<rect class="bdn" x="201.2" y="83.5" width="4.1" height="1.0"/>
+<line class="wdn" x1="209.9" y1="84.5" x2="209.9" y2="93.1"/>
+<rect class="bdn" x="207.8" y="84.6" width="4.1" height="1.5"/>
+<line class="wdn" x1="216.6" y1="87.1" x2="216.6" y2="102.1"/>
+<rect class="bdn" x="214.5" y="87.1" width="4.1" height="13.0"/>
+<line class="wdn" x1="223.3" y1="93.9" x2="223.3" y2="102.8"/>
+<rect class="bdn" x="221.2" y="100.2" width="4.1" height="1.0"/>
+<line class="wdn" x1="230.0" y1="100.6" x2="230.0" y2="108.3"/>
+<rect class="bdn" x="227.9" y="103.0" width="4.1" height="1.0"/>
+<line class="wup" x1="236.7" y1="104.7" x2="236.7" y2="113.9"/>
+<rect class="bup" x="234.6" y="105.7" width="4.1" height="1.0"/>
+<line class="wup" x1="243.3" y1="95.2" x2="243.3" y2="108.5"/>
+<rect class="bup" x="241.3" y="96.2" width="4.1" height="11.5"/>
+<line class="wup" x1="250.0" y1="89.7" x2="250.0" y2="99.8"/>
+<rect class="bup" x="248.0" y="92.5" width="4.1" height="3.1"/>
+<line class="wup" x1="256.7" y1="83.5" x2="256.7" y2="94.2"/>
+<rect class="bup" x="254.6" y="85.9" width="4.1" height="3.6"/>
+<line class="wdn" x1="263.4" y1="82.8" x2="263.4" y2="90.1"/>
+<rect class="bdn" x="261.3" y="86.3" width="4.1" height="2.9"/>
+<line class="wdn" x1="270.1" y1="86.2" x2="270.1" y2="95.7"/>
+<rect class="bdn" x="268.0" y="89.8" width="4.1" height="3.3"/>
+<line class="wdn" x1="276.8" y1="94.3" x2="276.8" y2="104.0"/>
+<rect class="bdn" x="274.7" y="95.3" width="4.1" height="8.0"/>
+<line class="wdn" x1="283.5" y1="110.7" x2="283.5" y2="134.5"/>
+<rect class="bdn" x="281.4" y="116.9" width="4.1" height="1.0"/>
+<line class="wdn" x1="290.1" y1="144.5" x2="290.1" y2="164.4"/>
+<rect class="bdn" x="288.1" y="144.7" width="4.1" height="16.9"/>
+<line class="wup" x1="296.8" y1="158.6" x2="296.8" y2="169.3"/>
+<rect class="bup" x="294.8" y="160.7" width="4.1" height="2.1"/>
+<line class="wdn" x1="303.5" y1="65.9" x2="303.5" y2="106.9"/>
+<rect class="bdn" x="301.4" y="80.9" width="4.1" height="2.4"/>
+<line class="wup" x1="310.2" y1="64.5" x2="310.2" y2="97.6"/>
+<rect class="bup" x="308.1" y="73.8" width="4.1" height="12.2"/>
+<line class="wdn" x1="316.9" y1="47.7" x2="316.9" y2="79.2"/>
+<rect class="bdn" x="314.8" y="63.6" width="4.1" height="10.0"/>
+<line class="wdn" x1="323.6" y1="67.9" x2="323.6" y2="79.2"/>
+<rect class="bdn" x="321.5" y="73.1" width="4.1" height="1.7"/>
+<line class="wup" x1="330.3" y1="47.1" x2="330.3" y2="78.2"/>
+<rect class="bup" x="328.2" y="61.0" width="4.1" height="14.4"/>
+<line class="wdn" x1="336.9" y1="53.8" x2="336.9" y2="80.3"/>
+<rect class="bdn" x="334.9" y="59.2" width="4.1" height="12.6"/>
+<line class="wup" x1="343.6" y1="44.2" x2="343.6" y2="68.9"/>
+<rect class="bup" x="341.6" y="50.2" width="4.1" height="13.8"/>
+<line class="wdn" x1="350.3" y1="43.9" x2="350.3" y2="56.5"/>
+<rect class="bdn" x="348.2" y="49.1" width="4.1" height="1.4"/>
+<line class="wup" x1="357.0" y1="23.3" x2="357.0" y2="50.9"/>
+<rect class="bup" x="354.9" y="29.2" width="4.1" height="21.7"/>
+<line class="wup" x1="363.7" y1="23.0" x2="363.7" y2="32.7"/>
+<rect class="bup" x="361.6" y="29.9" width="4.1" height="2.5"/>
+<line class="wdn" x1="370.4" y1="27.2" x2="370.4" y2="36.6"/>
+<rect class="bdn" x="368.3" y="29.9" width="4.1" height="2.9"/>
+<line class="wdn" x1="377.1" y1="36.6" x2="377.1" y2="45.1"/>
+<rect class="bdn" x="375.0" y="37.1" width="4.1" height="1.0"/>
+<line class="wup" x1="383.7" y1="24.2" x2="383.7" y2="39.1"/>
+<rect class="bup" x="381.7" y="24.7" width="4.1" height="13.1"/>
+<line class="wdn" x1="390.4" y1="23.9" x2="390.4" y2="36.0"/>
+<rect class="bdn" x="388.4" y="30.1" width="4.1" height="4.8"/>
+<line class="wdn" x1="397.1" y1="35.6" x2="397.1" y2="46.9"/>
+<rect class="bdn" x="395.0" y="38.4" width="4.1" height="6.7"/>
+<line class="wup" x1="403.8" y1="32.7" x2="403.8" y2="48.3"/>
+<rect class="bup" x="401.7" y="35.5" width="4.1" height="11.9"/>
+<line class="wup" x1="410.5" y1="31.9" x2="410.5" y2="44.3"/>
+<rect class="bup" x="408.4" y="36.3" width="4.1" height="1.1"/>
+<line class="wup" x1="417.2" y1="20.5" x2="417.2" y2="37.9"/>
+<rect class="bup" x="415.1" y="21.7" width="4.1" height="15.7"/>
+<line class="wup" x1="423.9" y1="19.2" x2="423.9" y2="31.8"/>
+<rect class="bup" x="421.8" y="20.6" width="4.1" height="3.7"/>
+<line class="wdn" x1="430.5" y1="17.0" x2="430.5" y2="25.0"/>
+<rect class="bdn" x="428.5" y="22.2" width="4.1" height="2.1"/>
+<line class="wup" x1="437.2" y1="20.8" x2="437.2" y2="27.1"/>
+<rect class="bup" x="435.2" y="25.7" width="4.1" height="1.3"/>
+<line class="wdn" x1="443.9" y1="25.5" x2="443.9" y2="33.8"/>
+<rect class="bdn" x="441.8" y="27.6" width="4.1" height="1.0"/>
+<line class="wup" x1="450.6" y1="22.9" x2="450.6" y2="32.8"/>
+<rect class="bup" x="448.5" y="23.5" width="4.1" height="5.8"/>
+<line class="wup" x1="457.3" y1="14.6" x2="457.3" y2="25.7"/>
+<rect class="bup" x="455.2" y="19.3" width="4.1" height="4.4"/>
+<line class="wdn" x1="464.0" y1="18.7" x2="464.0" y2="32.1"/>
+<rect class="bdn" x="461.9" y="19.2" width="4.1" height="9.4"/>
+<line class="wdn" x1="470.7" y1="28.0" x2="470.7" y2="35.1"/>
+<rect class="bdn" x="468.6" y="29.5" width="4.1" height="2.4"/>
+<line class="lvbuy" x1="6" y1="28.0" x2="474.0" y2="28.0"/>
+<line class="lvstop" x1="6" y1="35.1" x2="474.0" y2="35.1"/>
+<text class="tbuy" x="480" y="29.0">BUY 15.33</text>
+<text class="tstop" x="480" y="41.0">STOP 14.80</text>
+</svg></div>
+    <div class="mom">momentum rank &nbsp;1m 83th &middot; 3m 92th &middot; 6m 93th</div>
+    
+      <div class="plan">
+        <div class="pl"><span class="k">Buy stop</span><span class="v buy">15.33</span>
+          <span class="n">+1.94% from the close</span></div>
+        <div class="pl"><span class="k">Initial stop</span><span class="v stop">14.80</span>
+          <span class="n">0.53/share &middot; 3.47% of price</span></div>
+        <div class="pl"><span class="k">Size</span><span class="v">94 sh</span>
+          <span class="n">$1,441 pos &middot; $50 at risk</span></div>
+        <div class="pl"><span class="k">10R would be</span><span class="v tgt">20.64</span>
+          <span class="n">not a target &mdash; the trail decides the exit</span></div>
+      </div>
+      <div class="manage">Half off at the day-4 close &rarr; stop to breakeven
+        &rarr; trail the 10&nbsp;EMA &rarr; out on the first close below it.</div>
+  </article>
+  <article class="card cand stale">
+    <header>
+      <div class="tk">SLS</div>
+      <div class="px">13.86</div>
+      <div class="meta">ADR 8.4% &middot; $84M/day
+        &middot; base 47d &middot; thrust +106%</div>
+      <div class="badges"><span class="pill warn">regime off &mdash; not actionable</span> <span class="pill ok">0.77x ADR &middot; in check</span></div>
+    </header>
+    <div class="chartwrap"><svg viewBox="0 0 560 190" class="cx" role="img" aria-label="Daily chart with the consolidation shaded, the buy-stop pivot and the initial stop marked.">
+<rect class="riskband" x="6" y="46.4" width="468.0" height="16.2"/>
+<rect class="basezone" x="152.3" y="12" width="322.5" height="162.0"/>
+<polyline class="ma21" points="9.3,174.8 16.0,171.0 22.7,167.9 29.4,166.2 36.1,165.0 42.8,162.5 49.5,161.5 56.1,161.0 62.8,161.1 69.5,162.0 76.2,161.8 82.9,161.6 89.6,161.5 96.3,161.8 102.9,161.6 109.6,161.0 116.3,159.7 123.0,157.6 129.7,155.6 136.4,151.5 143.1,144.8 149.7,133.7 156.4,124.8 163.1,119.0 169.8,111.1 176.5,105.5 183.2,101.2 189.9,96.8 196.5,93.2 203.2,91.2 209.9,89.6 216.6,86.9 223.3,85.4 230.0,85.7 236.7,83.7 243.3,83.0 250.0,81.7 256.7,81.8 263.4,81.5 270.1,82.9 276.8,84.9 283.5,88.0 290.1,90.8 296.8,93.0 303.5,95.4 310.2,95.7 316.9,95.0 323.6,94.3 330.3,93.9 336.9,93.0 343.6,93.8 350.3,94.5 357.0,94.0 363.7,92.5 370.4,90.5 377.1,88.4 383.7,86.2 390.4,83.1 397.1,80.9 403.8,75.7 410.5,72.7 417.2,70.4 423.9,68.9 430.5,65.1 437.2,64.9 443.9,64.5 450.6,64.4 457.3,62.7 464.0,61.9 470.7,61.0"/>
+<polyline class="ma10" points="9.3,158.5 16.0,153.8 22.7,150.7 29.4,150.6 36.1,150.9 42.8,148.4 49.5,149.1 56.1,150.4 62.8,152.4 69.5,155.8 76.2,156.6 82.9,157.0 89.6,157.7 96.3,158.9 102.9,159.1 109.6,158.4 116.3,156.2 123.0,152.7 129.7,149.5 136.4,142.4 143.1,130.6 149.7,111.1 156.4,97.3 163.1,90.9 169.8,80.0 176.5,74.6 183.2,71.5 189.9,68.2 196.5,66.3 203.2,67.1 209.9,68.3 216.6,66.7 223.3,67.4 230.0,71.3 236.7,69.9 243.3,71.0 250.0,70.5 256.7,72.8 263.4,73.9 270.1,78.0 276.8,83.0 283.5,89.5 290.1,94.7 296.8,98.4 303.5,102.4 310.2,101.6 316.9,99.2 323.6,97.0 330.3,95.7 336.9,93.6 343.6,95.1 350.3,96.2 357.0,94.9 363.7,91.8 370.4,88.0 377.1,84.1 383.7,80.6 390.4,75.3 397.1,72.5 403.8,63.4 410.5,59.7 417.2,57.5 423.9,56.8 430.5,51.4 437.2,53.5 443.9,54.8 450.6,56.3 457.3,54.4 464.0,54.4 470.7,53.8"/>
+<line class="wup" x1="9.3" y1="133.9" x2="9.3" y2="147.0"/>
+<rect class="bup" x="7.3" y="134.8" width="4.1" height="10.9"/>
+<line class="wup" x1="16.0" y1="129.0" x2="16.0" y2="145.2"/>
+<rect class="bup" x="14.0" y="132.5" width="4.1" height="2.0"/>
+<line class="wdn" x1="22.7" y1="132.8" x2="22.7" y2="142.0"/>
+<rect class="bdn" x="20.6" y="136.5" width="4.1" height="1.0"/>
+<line class="wdn" x1="29.4" y1="138.1" x2="29.4" y2="151.8"/>
+<rect class="bdn" x="27.3" y="138.1" width="4.1" height="12.0"/>
+<line class="wup" x1="36.1" y1="150.9" x2="36.1" y2="158.6"/>
+<rect class="bup" x="34.0" y="152.5" width="4.1" height="1.2"/>
+<line class="wup" x1="42.8" y1="134.1" x2="42.8" y2="156.3"/>
+<rect class="bup" x="40.7" y="137.3" width="4.1" height="18.6"/>
+<line class="wdn" x1="49.5" y1="137.5" x2="49.5" y2="153.7"/>
+<rect class="bdn" x="47.4" y="140.7" width="4.1" height="11.1"/>
+<line class="wdn" x1="56.1" y1="146.4" x2="56.1" y2="156.8"/>
+<rect class="bdn" x="54.1" y="146.8" width="4.1" height="9.5"/>
+<line class="wdn" x1="62.8" y1="154.3" x2="62.8" y2="165.5"/>
+<rect class="bdn" x="60.8" y="154.8" width="4.1" height="6.8"/>
+<line class="wdn" x1="69.5" y1="161.2" x2="69.5" y2="171.9"/>
+<rect class="bdn" x="67.4" y="162.7" width="4.1" height="8.4"/>
+<line class="wup" x1="76.2" y1="157.0" x2="76.2" y2="172.5"/>
+<rect class="bup" x="74.1" y="160.4" width="4.1" height="9.8"/>
+<line class="wup" x1="82.9" y1="153.7" x2="82.9" y2="163.0"/>
+<rect class="bup" x="80.8" y="158.9" width="4.1" height="2.8"/>
+<line class="wdn" x1="89.6" y1="153.8" x2="89.6" y2="164.4"/>
+<rect class="bdn" x="87.5" y="157.7" width="4.1" height="3.0"/>
+<line class="wdn" x1="96.3" y1="158.6" x2="96.3" y2="166.2"/>
+<rect class="bdn" x="94.2" y="163.0" width="4.1" height="1.2"/>
+<line class="wup" x1="102.9" y1="153.8" x2="102.9" y2="165.5"/>
+<rect class="bup" x="100.9" y="160.2" width="4.1" height="3.0"/>
+<line class="wup" x1="109.6" y1="149.2" x2="109.6" y2="157.5"/>
+<rect class="bup" x="107.6" y="155.0" width="4.1" height="1.0"/>
+<line class="wup" x1="116.3" y1="140.2" x2="116.3" y2="149.9"/>
+<rect class="bup" x="114.2" y="146.4" width="4.1" height="2.9"/>
+<line class="wup" x1="123.0" y1="133.6" x2="123.0" y2="147.7"/>
+<rect class="bup" x="120.9" y="136.8" width="4.1" height="10.2"/>
+<line class="wdn" x1="129.7" y1="132.4" x2="129.7" y2="141.4"/>
+<rect class="bdn" x="127.6" y="133.6" width="4.1" height="1.4"/>
+<line class="wup" x1="136.4" y1="101.3" x2="136.4" y2="138.4"/>
+<rect class="bup" x="134.3" y="110.8" width="4.1" height="23.5"/>
+<line class="wup" x1="143.1" y1="76.9" x2="143.1" y2="114.5"/>
+<rect class="bup" x="141.0" y="77.6" width="4.1" height="36.0"/>
+<line class="wup" x1="149.7" y1="19.1" x2="149.7" y2="66.2"/>
+<rect class="bup" x="147.7" y="23.0" width="4.1" height="37.8"/>
+<line class="wdn" x1="156.4" y1="15.4" x2="156.4" y2="60.6"/>
+<rect class="bdn" x="154.4" y="27.8" width="4.1" height="7.5"/>
+<line class="wdn" x1="163.1" y1="40.4" x2="163.1" y2="71.2"/>
+<rect class="bdn" x="161.0" y="48.3" width="4.1" height="13.6"/>
+<line class="wup" x1="169.8" y1="30.1" x2="169.8" y2="67.6"/>
+<rect class="bup" x="167.7" y="31.4" width="4.1" height="31.8"/>
+<line class="wdn" x1="176.5" y1="20.9" x2="176.5" y2="53.5"/>
+<rect class="bdn" x="174.4" y="34.8" width="4.1" height="15.2"/>
+<line class="wdn" x1="183.2" y1="49.2" x2="183.2" y2="68.1"/>
+<rect class="bdn" x="181.1" y="50.6" width="4.1" height="7.2"/>
+<line class="wdn" x1="189.9" y1="31.2" x2="189.9" y2="84.5"/>
+<rect class="bdn" x="187.8" y="43.5" width="4.1" height="9.6"/>
+<line class="wdn" x1="196.5" y1="33.5" x2="196.5" y2="60.5"/>
+<rect class="bdn" x="194.5" y="53.2" width="4.1" height="4.5"/>
+<line class="wdn" x1="203.2" y1="60.3" x2="203.2" y2="75.8"/>
+<rect class="bdn" x="201.2" y="61.9" width="4.1" height="9.1"/>
+<line class="wup" x1="209.9" y1="66.9" x2="209.9" y2="78.7"/>
+<rect class="bup" x="207.8" y="73.5" width="4.1" height="2.9"/>
+<line class="wup" x1="216.6" y1="55.3" x2="216.6" y2="73.5"/>
+<rect class="bup" x="214.5" y="59.8" width="4.1" height="13.0"/>
+<line class="wdn" x1="223.3" y1="53.7" x2="223.3" y2="75.6"/>
+<rect class="bdn" x="221.2" y="62.1" width="4.1" height="8.4"/>
+<line class="wdn" x1="230.0" y1="72.1" x2="230.0" y2="93.3"/>
+<rect class="bdn" x="227.9" y="72.1" width="4.1" height="16.9"/>
+<line class="wup" x1="236.7" y1="57.0" x2="236.7" y2="95.2"/>
+<rect class="bup" x="234.6" y="63.3" width="4.1" height="27.5"/>
+<line class="wdn" x1="243.3" y1="56.4" x2="243.3" y2="86.9"/>
+<rect class="bdn" x="241.3" y="62.4" width="4.1" height="13.6"/>
+<line class="wup" x1="250.0" y1="62.4" x2="250.0" y2="80.6"/>
+<rect class="bup" x="248.0" y="68.5" width="4.1" height="6.1"/>
+<line class="wdn" x1="256.7" y1="73.9" x2="256.7" y2="87.4"/>
+<rect class="bdn" x="254.6" y="76.2" width="4.1" height="7.0"/>
+<line class="wup" x1="263.4" y1="68.1" x2="263.4" y2="90.1"/>
+<rect class="bup" x="261.3" y="78.5" width="4.1" height="10.4"/>
+<line class="wdn" x1="270.1" y1="76.0" x2="270.1" y2="98.5"/>
+<rect class="bdn" x="268.0" y="78.5" width="4.1" height="18.2"/>
+<line class="wdn" x1="276.8" y1="93.8" x2="276.8" y2="127.4"/>
+<rect class="bdn" x="274.7" y="97.7" width="4.1" height="7.6"/>
+<line class="wdn" x1="283.5" y1="112.6" x2="283.5" y2="134.7"/>
+<rect class="bdn" x="281.4" y="114.0" width="4.1" height="4.6"/>
+<line class="wup" x1="290.1" y1="107.7" x2="290.1" y2="122.7"/>
+<rect class="bup" x="288.1" y="118.4" width="4.1" height="1.0"/>
+<line class="wup" x1="296.8" y1="114.0" x2="296.8" y2="124.5"/>
+<rect class="bup" x="294.8" y="115.0" width="4.1" height="6.4"/>
+<line class="wdn" x1="303.5" y1="110.6" x2="303.5" y2="122.5"/>
+<rect class="bdn" x="301.4" y="113.6" width="4.1" height="6.4"/>
+<line class="wup" x1="310.2" y1="94.7" x2="310.2" y2="123.8"/>
+<rect class="bup" x="308.1" y="98.5" width="4.1" height="21.8"/>
+<line class="wup" x1="316.9" y1="85.6" x2="316.9" y2="101.3"/>
+<rect class="bup" x="314.8" y="87.9" width="4.1" height="7.3"/>
+<line class="wup" x1="323.6" y1="83.5" x2="323.6" y2="95.4"/>
+<rect class="bup" x="321.5" y="87.0" width="4.1" height="1.1"/>
+<line class="wup" x1="330.3" y1="81.3" x2="330.3" y2="91.9"/>
+<rect class="bup" x="328.2" y="89.9" width="4.1" height="1.4"/>
+<line class="wup" x1="336.9" y1="80.8" x2="336.9" y2="91.5"/>
+<rect class="bup" x="334.9" y="84.4" width="4.1" height="1.1"/>
+<line class="wdn" x1="343.6" y1="84.5" x2="343.6" y2="104.0"/>
+<rect class="bdn" x="341.6" y="85.4" width="4.1" height="16.2"/>
+<line class="wdn" x1="350.3" y1="95.4" x2="350.3" y2="105.1"/>
+<rect class="bdn" x="348.2" y="97.6" width="4.1" height="3.9"/>
+<line class="wdn" x1="357.0" y1="76.5" x2="357.0" y2="93.5"/>
+<rect class="bdn" x="354.9" y="86.0" width="4.1" height="2.7"/>
+<line class="wup" x1="363.7" y1="74.1" x2="363.7" y2="95.2"/>
+<rect class="bup" x="361.6" y="78.1" width="4.1" height="11.8"/>
+<line class="wup" x1="370.4" y1="66.7" x2="370.4" y2="81.3"/>
+<rect class="bup" x="368.3" y="70.6" width="4.1" height="6.8"/>
+<line class="wup" x1="377.1" y1="62.2" x2="377.1" y2="77.6"/>
+<rect class="bup" x="375.0" y="66.7" width="4.1" height="3.9"/>
+<line class="wup" x1="383.7" y1="58.1" x2="383.7" y2="75.1"/>
+<rect class="bup" x="381.7" y="64.9" width="4.1" height="7.8"/>
+<line class="wup" x1="390.4" y1="43.7" x2="390.4" y2="66.7"/>
+<rect class="bup" x="388.4" y="51.5" width="4.1" height="7.0"/>
+<line class="wdn" x1="397.1" y1="41.1" x2="397.1" y2="66.5"/>
+<rect class="bdn" x="395.0" y="51.7" width="4.1" height="7.8"/>
+<line class="wup" x1="403.8" y1="19.1" x2="403.8" y2="62.1"/>
+<rect class="bup" x="401.7" y="22.8" width="4.1" height="31.6"/>
+<line class="wdn" x1="410.5" y1="22.5" x2="410.5" y2="50.5"/>
+<rect class="bdn" x="408.4" y="22.6" width="4.1" height="20.5"/>
+<line class="wdn" x1="417.2" y1="24.1" x2="417.2" y2="50.5"/>
+<rect class="bdn" x="415.1" y="38.9" width="4.1" height="8.4"/>
+<line class="wdn" x1="423.9" y1="50.4" x2="423.9" y2="59.4"/>
+<rect class="bdn" x="421.8" y="52.2" width="4.1" height="1.5"/>
+<line class="wup" x1="430.5" y1="21.0" x2="430.5" y2="50.4"/>
+<rect class="bup" x="428.5" y="27.3" width="4.1" height="20.2"/>
+<line class="wdn" x1="437.2" y1="34.8" x2="437.2" y2="64.0"/>
+<rect class="bdn" x="435.2" y="35.1" width="4.1" height="27.8"/>
+<line class="wup" x1="443.9" y1="54.8" x2="443.9" y2="67.8"/>
+<rect class="bup" x="441.8" y="60.6" width="4.1" height="1.0"/>
+<line class="wup" x1="450.6" y1="59.8" x2="450.6" y2="73.1"/>
+<rect class="bup" x="448.5" y="62.8" width="4.1" height="3.6"/>
+<line class="wup" x1="457.3" y1="43.0" x2="457.3" y2="62.6"/>
+<rect class="bup" x="455.2" y="46.0" width="4.1" height="15.9"/>
+<line class="wdn" x1="464.0" y1="39.2" x2="464.0" y2="56.9"/>
+<rect class="bdn" x="461.9" y="47.8" width="4.1" height="6.4"/>
+<line class="wup" x1="470.7" y1="46.4" x2="470.7" y2="59.0"/>
+<rect class="bup" x="468.6" y="51.4" width="4.1" height="6.2"/>
+<line class="lvbuy" x1="6" y1="46.4" x2="474.0" y2="46.4"/>
+<line class="lvstop" x1="6" y1="62.6" x2="474.0" y2="62.6"/>
+<text class="tbuy" x="480" y="49.9">BUY 14.14</text>
+<text class="tstop" x="480" y="66.1">STOP 13.23</text>
+</svg></div>
+    <div class="mom">momentum rank &nbsp;1m 84th &middot; 3m 96th &middot; 6m 96th</div>
+    
+      <div class="plan">
+        <div class="pl"><span class="k">Buy stop</span><span class="v buy">14.14</span>
+          <span class="n">+2.02% from the close</span></div>
+        <div class="pl"><span class="k">Initial stop</span><span class="v stop">13.23</span>
+          <span class="n">0.91/share &middot; 6.44% of price</span></div>
+        <div class="pl"><span class="k">Size</span><span class="v">54 sh</span>
+          <span class="n">$764 pos &middot; $49 at risk</span></div>
+        <div class="pl"><span class="k">10R would be</span><span class="v tgt">23.24</span>
+          <span class="n">not a target &mdash; the trail decides the exit</span></div>
+      </div>
+      <div class="manage">Half off at the day-4 close &rarr; stop to breakeven
+        &rarr; trail the 10&nbsp;EMA &rarr; out on the first close below it.</div>
+  </article>
+  <article class="card cand stale">
+    <header>
+      <div class="tk">ABCL</div>
+      <div class="px">11.43</div>
+      <div class="meta">ADR 7.6% &middot; $71M/day
+        &middot; base 12d &middot; thrust +129%</div>
+      <div class="badges"><span class="pill warn">regime off &mdash; not actionable</span> <span class="pill ok">0.89x ADR &middot; in check</span></div>
+    </header>
+    <div class="chartwrap"><svg viewBox="0 0 560 190" class="cx" role="img" aria-label="Daily chart with the consolidation shaded, the buy-stop pivot and the initial stop marked.">
+<rect class="riskband" x="6" y="35.7" width="468.0" height="16.4"/>
+<rect class="basezone" x="386.3" y="12" width="88.5" height="162.0"/>
+<polyline class="ma21" points="9.3,177.3 16.0,174.6 22.7,171.6 29.4,169.6 36.1,168.5 42.8,166.2 49.5,165.6 56.1,165.4 62.8,165.5 69.5,166.0 76.2,166.0 82.9,166.2 89.6,166.2 96.3,166.6 102.9,166.3 109.6,165.9 116.3,165.0 123.0,164.5 129.7,163.3 136.4,161.0 143.1,157.5 149.7,153.0 156.4,149.4 163.1,146.6 169.8,143.0 176.5,140.3 183.2,138.1 189.9,137.3 196.5,136.2 203.2,136.1 209.9,136.5 216.6,136.5 223.3,136.4 230.0,137.5 236.7,137.9 243.3,139.5 250.0,140.7 256.7,142.2 263.4,143.7 270.1,145.7 276.8,147.6 283.5,149.3 290.1,150.7 296.8,151.4 303.5,151.9 310.2,152.2 316.9,152.0 323.6,152.1 330.3,151.1 336.9,149.4 343.6,143.3 350.3,136.9 357.0,130.1 363.7,122.6 370.4,115.1 377.1,108.6 383.7,102.9 390.4,96.0 397.1,90.5 403.8,86.1 410.5,83.3 417.2,77.3 423.9,72.3 430.5,67.4 437.2,65.0 443.9,62.5 450.6,60.7 457.3,58.8 464.0,56.8 470.7,55.1"/>
+<polyline class="ma10" points="9.3,171.0 16.0,166.8 22.7,162.3 29.4,159.9 36.1,159.4 42.8,156.6 49.5,157.1 56.1,158.3 62.8,159.7 69.5,161.7 76.2,162.6 82.9,163.5 89.6,164.1 96.3,165.3 102.9,164.9 109.6,164.3 116.3,162.9 123.0,162.3 129.7,160.2 136.4,156.2 143.1,150.1 149.7,142.4 156.4,137.1 163.1,133.7 169.8,129.0 176.5,126.1 183.2,124.3 189.9,125.1 196.5,125.1 203.2,126.9 209.9,129.4 216.6,130.7 223.3,131.7 230.0,134.7 236.7,136.0 243.3,139.6 250.0,141.9 256.7,144.7 263.4,147.2 270.1,150.6 276.8,153.6 283.5,155.9 290.1,157.4 296.8,157.5 303.5,157.6 310.2,157.1 316.9,155.8 323.6,155.3 330.3,152.6 336.9,148.9 343.6,136.8 350.3,125.3 357.0,113.7 363.7,101.8 370.4,90.6 377.1,82.1 383.7,75.4 390.4,66.6 397.1,61.1 403.8,57.5 410.5,57.2 417.2,49.8 423.9,44.8 430.5,40.1 437.2,40.2 443.9,39.8 450.6,40.2 457.3,40.2 464.0,39.5 470.7,39.4"/>
+<line class="wup" x1="9.3" y1="153.2" x2="9.3" y2="164.7"/>
+<rect class="bup" x="7.3" y="157.2" width="4.1" height="7.1"/>
+<line class="wup" x1="16.0" y1="146.6" x2="16.0" y2="161.4"/>
+<rect class="bup" x="14.0" y="148.1" width="4.1" height="10.4"/>
+<line class="wup" x1="22.7" y1="135.2" x2="22.7" y2="149.9"/>
+<rect class="bup" x="20.6" y="142.1" width="4.1" height="7.3"/>
+<line class="wdn" x1="29.4" y1="142.5" x2="29.4" y2="149.9"/>
+<rect class="bdn" x="27.3" y="145.3" width="4.1" height="3.6"/>
+<line class="wdn" x1="36.1" y1="151.4" x2="36.1" y2="159.7"/>
+<rect class="bdn" x="34.0" y="151.5" width="4.1" height="5.9"/>
+<line class="wup" x1="42.8" y1="137.2" x2="42.8" y2="161.8"/>
+<rect class="bup" x="40.7" y="143.9" width="4.1" height="16.9"/>
+<line class="wdn" x1="49.5" y1="144.8" x2="49.5" y2="162.0"/>
+<rect class="bdn" x="47.4" y="147.5" width="4.1" height="12.0"/>
+<line class="wdn" x1="56.1" y1="152.8" x2="56.1" y2="165.1"/>
+<rect class="bdn" x="54.1" y="154.5" width="4.1" height="9.1"/>
+<line class="wdn" x1="62.8" y1="158.9" x2="62.8" y2="171.9"/>
+<rect class="bdn" x="60.8" y="160.1" width="4.1" height="6.0"/>
+<line class="wdn" x1="69.5" y1="162.6" x2="69.5" y2="170.7"/>
+<rect class="bdn" x="67.4" y="168.0" width="4.1" height="2.5"/>
+<line class="wup" x1="76.2" y1="165.7" x2="76.2" y2="171.7"/>
+<rect class="bup" x="74.1" y="166.7" width="4.1" height="1.0"/>
+<line class="wdn" x1="82.9" y1="163.8" x2="82.9" y2="169.6"/>
+<rect class="bdn" x="80.8" y="166.1" width="4.1" height="1.2"/>
+<line class="wdn" x1="89.6" y1="160.9" x2="89.6" y2="168.8"/>
+<rect class="bdn" x="87.5" y="162.2" width="4.1" height="4.8"/>
+<line class="wdn" x1="96.3" y1="166.3" x2="96.3" y2="172.1"/>
+<rect class="bdn" x="94.2" y="167.6" width="4.1" height="2.9"/>
+<line class="wup" x1="102.9" y1="156.6" x2="102.9" y2="168.8"/>
+<rect class="bup" x="100.9" y="163.2" width="4.1" height="4.9"/>
+<line class="wdn" x1="109.6" y1="157.0" x2="109.6" y2="165.5"/>
+<rect class="bdn" x="107.6" y="159.7" width="4.1" height="1.7"/>
+<line class="wup" x1="116.3" y1="154.3" x2="116.3" y2="160.4"/>
+<rect class="bup" x="114.2" y="157.0" width="4.1" height="3.4"/>
+<line class="wup" x1="123.0" y1="153.3" x2="123.0" y2="162.6"/>
+<rect class="bup" x="120.9" y="159.3" width="4.1" height="3.1"/>
+<line class="wup" x1="129.7" y1="144.9" x2="129.7" y2="160.2"/>
+<rect class="bup" x="127.6" y="151.0" width="4.1" height="7.8"/>
+<line class="wup" x1="136.4" y1="133.8" x2="136.4" y2="149.7"/>
+<rect class="bup" x="134.3" y="137.9" width="4.1" height="11.4"/>
+<line class="wup" x1="143.1" y1="122.6" x2="143.1" y2="141.9"/>
+<rect class="bup" x="141.0" y="123.0" width="4.1" height="18.5"/>
+<line class="wup" x1="149.7" y1="101.4" x2="149.7" y2="122.8"/>
+<rect class="bup" x="147.7" y="107.6" width="4.1" height="11.6"/>
+<line class="wdn" x1="156.4" y1="104.5" x2="156.4" y2="117.0"/>
+<rect class="bdn" x="154.4" y="112.1" width="4.1" height="1.1"/>
+<line class="wdn" x1="163.1" y1="113.0" x2="163.1" y2="125.4"/>
+<rect class="bdn" x="161.0" y="116.6" width="4.1" height="1.9"/>
+<line class="wup" x1="169.8" y1="103.5" x2="169.8" y2="119.2"/>
+<rect class="bup" x="167.7" y="107.8" width="4.1" height="9.3"/>
+<line class="wdn" x1="176.5" y1="107.0" x2="176.5" y2="121.5"/>
+<rect class="bdn" x="174.4" y="109.1" width="4.1" height="3.7"/>
+<line class="wdn" x1="183.2" y1="101.0" x2="183.2" y2="121.3"/>
+<rect class="bdn" x="181.1" y="103.3" width="4.1" height="13.3"/>
+<line class="wdn" x1="189.9" y1="116.3" x2="189.9" y2="130.0"/>
+<rect class="bdn" x="187.8" y="122.7" width="4.1" height="6.1"/>
+<line class="wup" x1="196.5" y1="120.3" x2="196.5" y2="134.6"/>
+<rect class="bup" x="194.5" y="124.8" width="4.1" height="5.8"/>
+<line class="wdn" x1="203.2" y1="124.8" x2="203.2" y2="139.1"/>
+<rect class="bdn" x="201.2" y="124.8" width="4.1" height="10.2"/>
+<line class="wdn" x1="209.9" y1="135.7" x2="209.9" y2="143.3"/>
+<rect class="bdn" x="207.8" y="136.9" width="4.1" height="3.9"/>
+<line class="wup" x1="216.6" y1="133.5" x2="216.6" y2="142.3"/>
+<rect class="bup" x="214.5" y="136.3" width="4.1" height="1.0"/>
+<line class="wdn" x1="223.3" y1="132.3" x2="223.3" y2="138.7"/>
+<rect class="bdn" x="221.2" y="133.8" width="4.1" height="2.5"/>
+<line class="wdn" x1="230.0" y1="137.9" x2="230.0" y2="150.6"/>
+<rect class="bdn" x="227.9" y="138.1" width="4.1" height="10.2"/>
+<line class="wup" x1="236.7" y1="140.2" x2="236.7" y2="152.6"/>
+<rect class="bup" x="234.6" y="142.0" width="4.1" height="8.8"/>
+<line class="wdn" x1="243.3" y1="141.9" x2="243.3" y2="156.1"/>
+<rect class="bdn" x="241.3" y="144.6" width="4.1" height="11.2"/>
+<line class="wup" x1="250.0" y1="150.6" x2="250.0" y2="161.1"/>
+<rect class="bup" x="248.0" y="152.2" width="4.1" height="3.2"/>
+<line class="wdn" x1="256.7" y1="150.4" x2="256.7" y2="157.6"/>
+<rect class="bdn" x="254.6" y="153.3" width="4.1" height="3.9"/>
+<line class="wdn" x1="263.4" y1="154.3" x2="263.4" y2="159.9"/>
+<rect class="bdn" x="261.3" y="158.0" width="4.1" height="1.0"/>
+<line class="wdn" x1="270.1" y1="157.0" x2="270.1" y2="166.3"/>
+<rect class="bdn" x="268.0" y="158.4" width="4.1" height="7.5"/>
+<line class="wdn" x1="276.8" y1="162.0" x2="276.8" y2="167.4"/>
+<rect class="bdn" x="274.7" y="163.9" width="4.1" height="3.2"/>
+<line class="wup" x1="283.5" y1="164.4" x2="283.5" y2="172.8"/>
+<rect class="bup" x="281.4" y="166.3" width="4.1" height="1.9"/>
+<line class="wup" x1="290.1" y1="160.3" x2="290.1" y2="167.7"/>
+<rect class="bup" x="288.1" y="164.3" width="4.1" height="1.0"/>
+<line class="wup" x1="296.8" y1="157.4" x2="296.8" y2="165.1"/>
+<rect class="bup" x="294.8" y="158.0" width="4.1" height="3.3"/>
+<line class="wup" x1="303.5" y1="154.3" x2="303.5" y2="161.8"/>
+<rect class="bup" x="301.4" y="157.6" width="4.1" height="1.0"/>
+<line class="wup" x1="310.2" y1="150.7" x2="310.2" y2="160.6"/>
+<rect class="bup" x="308.1" y="155.1" width="4.1" height="2.6"/>
+<line class="wup" x1="316.9" y1="148.7" x2="316.9" y2="154.3"/>
+<rect class="bup" x="314.8" y="149.7" width="4.1" height="2.5"/>
+<line class="wdn" x1="323.6" y1="147.2" x2="323.6" y2="154.9"/>
+<rect class="bdn" x="321.5" y="150.6" width="4.1" height="2.7"/>
+<line class="wup" x1="330.3" y1="139.9" x2="330.3" y2="159.5"/>
+<rect class="bup" x="328.2" y="140.6" width="4.1" height="15.3"/>
+<line class="wup" x1="336.9" y1="131.1" x2="336.9" y2="144.3"/>
+<rect class="bup" x="334.9" y="132.3" width="4.1" height="5.8"/>
+<line class="wup" x1="343.6" y1="68.4" x2="343.6" y2="101.8"/>
+<rect class="bup" x="341.6" y="82.3" width="4.1" height="12.0"/>
+<line class="wup" x1="350.3" y1="62.6" x2="350.3" y2="89.0"/>
+<rect class="bup" x="348.2" y="73.6" width="4.1" height="7.1"/>
+<line class="wup" x1="357.0" y1="60.8" x2="357.0" y2="89.4"/>
+<rect class="bup" x="354.9" y="61.3" width="4.1" height="23.5"/>
+<line class="wup" x1="363.7" y1="46.6" x2="363.7" y2="64.1"/>
+<rect class="bup" x="361.6" y="48.5" width="4.1" height="13.5"/>
+<line class="wup" x1="370.4" y1="37.5" x2="370.4" y2="58.9"/>
+<rect class="bup" x="368.3" y="40.0" width="4.1" height="11.2"/>
+<line class="wdn" x1="377.1" y1="34.5" x2="377.1" y2="56.1"/>
+<rect class="bdn" x="375.0" y="41.7" width="4.1" height="2.1"/>
+<line class="wup" x1="383.7" y1="37.2" x2="383.7" y2="54.1"/>
+<rect class="bup" x="381.7" y="45.4" width="4.1" height="6.7"/>
+<line class="wup" x1="390.4" y1="24.0" x2="390.4" y2="38.2"/>
+<rect class="bup" x="388.4" y="27.0" width="4.1" height="10.6"/>
+<line class="wdn" x1="397.1" y1="25.5" x2="397.1" y2="39.6"/>
+<rect class="bdn" x="395.0" y="31.0" width="4.1" height="5.1"/>
+<line class="wdn" x1="403.8" y1="31.3" x2="403.8" y2="45.0"/>
+<rect class="bdn" x="401.7" y="36.1" width="4.1" height="5.2"/>
+<line class="wdn" x1="410.5" y1="47.7" x2="410.5" y2="59.5"/>
+<rect class="bdn" x="408.4" y="48.5" width="4.1" height="7.5"/>
+<line class="wup" x1="417.2" y1="16.8" x2="417.2" y2="48.1"/>
+<rect class="bup" x="415.1" y="16.8" width="4.1" height="31.1"/>
+<line class="wup" x1="423.9" y1="19.7" x2="423.9" y2="26.1"/>
+<rect class="bup" x="421.8" y="22.2" width="4.1" height="1.0"/>
+<line class="wup" x1="430.5" y1="15.1" x2="430.5" y2="25.4"/>
+<rect class="bup" x="428.5" y="18.9" width="4.1" height="3.1"/>
+<line class="wdn" x1="437.2" y1="19.9" x2="437.2" y2="42.5"/>
+<rect class="bdn" x="435.2" y="20.8" width="4.1" height="19.8"/>
+<line class="wup" x1="443.9" y1="36.0" x2="443.9" y2="51.4"/>
+<rect class="bup" x="441.8" y="37.9" width="4.1" height="7.9"/>
+<line class="wup" x1="450.6" y1="37.1" x2="450.6" y2="46.9"/>
+<rect class="bup" x="448.5" y="42.1" width="4.1" height="1.0"/>
+<line class="wdn" x1="457.3" y1="36.1" x2="457.3" y2="52.0"/>
+<rect class="bdn" x="455.2" y="39.8" width="4.1" height="1.0"/>
+<line class="wdn" x1="464.0" y1="30.9" x2="464.0" y2="42.5"/>
+<rect class="bdn" x="461.9" y="35.9" width="4.1" height="1.0"/>
+<line class="wdn" x1="470.7" y1="35.7" x2="470.7" y2="41.1"/>
+<rect class="bdn" x="468.6" y="37.5" width="4.1" height="1.5"/>
+<line class="lvbuy" x1="6" y1="35.7" x2="474.0" y2="35.7"/>
+<line class="lvstop" x1="6" y1="52.0" x2="474.0" y2="52.0"/>
+<text class="tbuy" x="480" y="39.2">BUY 11.59</text>
+<text class="tstop" x="480" y="55.5">STOP 10.80</text>
+</svg></div>
+    <div class="mom">momentum rank &nbsp;1m 99th &middot; 3m 98th &middot; 6m 99th</div>
+    
+      <div class="plan">
+        <div class="pl"><span class="k">Buy stop</span><span class="v buy">11.59</span>
+          <span class="n">+1.40% from the close</span></div>
+        <div class="pl"><span class="k">Initial stop</span><span class="v stop">10.80</span>
+          <span class="n">0.79/share &middot; 6.82% of price</span></div>
+        <div class="pl"><span class="k">Size</span><span class="v">63 sh</span>
+          <span class="n">$730 pos &middot; $50 at risk</span></div>
+        <div class="pl"><span class="k">10R would be</span><span class="v tgt">19.49</span>
+          <span class="n">not a target &mdash; the trail decides the exit</span></div>
+      </div>
+      <div class="manage">Half off at the day-4 close &rarr; stop to breakeven
+        &rarr; trail the 10&nbsp;EMA &rarr; out on the first close below it.</div>
+  </article></div>
+<h2>Gated out by the ADR ceiling</h2><div class="empty">Nothing was rejected on risk width tonight.</div>
+<h2>Watchlist &mdash; base intact, trigger not yet printed &nbsp;<span class="mono">2</span></h2><div class="cards two">
+  <article class="card watch">
+    <header>
+      <div class="tk">QMCO</div>
+      <div class="px">24.73</div>
+      <div class="meta">ADR 10.3% &middot; $28M/day
+        &middot; base 15d &middot; thrust +172%</div>
+      <div class="badges"><span class="pill bad">1.44x ADR &middot; over</span></div>
+    </header>
+    <div class="chartwrap"><svg viewBox="0 0 560 190" class="cx" role="img" aria-label="Daily chart with the consolidation shaded, the buy-stop pivot and the initial stop marked.">
+<rect class="riskband" x="6" y="33.9" width="468.0" height="31.0"/>
+<rect class="basezone" x="366.2" y="12" width="108.6" height="162.0"/>
+<polyline class="ma21" points="9.3,174.7 16.0,173.7 22.7,172.2 29.4,169.4 36.1,164.2 42.8,159.6 49.5,157.8 56.1,156.2 62.8,154.4 69.5,153.2 76.2,151.6 82.9,149.7 89.6,147.8 96.3,145.8 102.9,143.5 109.6,141.0 116.3,139.8 123.0,139.0 129.7,138.5 136.4,138.4 143.1,139.2 149.7,139.9 156.4,141.1 163.1,142.3 169.8,143.9 176.5,145.2 183.2,146.6 189.9,147.5 196.5,148.5 203.2,149.7 209.9,151.0 216.6,151.9 223.3,152.6 230.0,153.7 236.7,154.0 243.3,153.9 250.0,153.5 256.7,153.0 263.4,152.6 270.1,152.6 276.8,152.7 283.5,152.6 290.1,153.1 296.8,152.9 303.5,153.2 310.2,153.6 316.9,153.2 323.6,152.8 330.3,152.4 336.9,151.7 343.6,151.3 350.3,145.1 357.0,137.7 363.7,128.9 370.4,119.8 377.1,112.4 383.7,106.7 390.4,102.9 397.1,100.3 403.8,96.7 410.5,93.9 417.2,90.8 423.9,87.3 430.5,83.9 437.2,81.8 443.9,78.3 450.6,75.2 457.3,73.5 464.0,70.8 470.7,68.0"/>
+<polyline class="ma10" points="9.3,171.6 16.0,170.3 22.7,168.0 29.4,163.0 36.1,153.8 42.8,146.6 49.5,145.3 56.1,144.4 62.8,143.0 69.5,142.5 76.2,141.4 82.9,139.5 89.6,137.6 96.3,135.3 102.9,132.7 109.6,129.6 116.3,129.3 123.0,129.5 129.7,130.2 136.4,131.5 143.1,134.5 149.7,136.7 156.4,139.7 163.1,142.3 169.8,145.6 176.5,147.7 183.2,150.1 189.9,151.3 196.5,152.6 203.2,154.2 209.9,156.1 216.6,157.0 223.3,157.4 230.0,158.8 236.7,158.3 243.3,157.5 250.0,156.0 256.7,154.6 263.4,153.5 270.1,153.4 276.8,153.4 283.5,153.0 290.1,153.9 296.8,153.5 303.5,154.0 310.2,154.5 316.9,153.7 323.6,152.8 330.3,151.9 336.9,150.6 343.6,149.9 350.3,138.0 357.0,124.4 363.7,109.1 370.4,94.5 377.1,84.3 383.7,78.1 390.4,75.6 397.1,75.5 403.8,72.8 410.5,71.6 417.2,69.4 423.9,66.3 430.5,63.3 437.2,62.8 443.9,59.3 450.6,56.6 457.3,56.5 464.0,54.2 470.7,51.6"/>
+<line class="wup" x1="9.3" y1="165.5" x2="9.3" y2="173.1"/>
+<rect class="bup" x="7.3" y="167.3" width="4.1" height="5.5"/>
+<line class="wup" x1="16.0" y1="162.3" x2="16.0" y2="169.5"/>
+<rect class="bup" x="14.0" y="164.1" width="4.1" height="3.3"/>
+<line class="wup" x1="22.7" y1="155.9" x2="22.7" y2="167.0"/>
+<rect class="bup" x="20.6" y="157.6" width="4.1" height="7.8"/>
+<line class="wup" x1="29.4" y1="136.8" x2="29.4" y2="159.9"/>
+<rect class="bup" x="27.3" y="140.7" width="4.1" height="17.4"/>
+<line class="wup" x1="36.1" y1="107.0" x2="36.1" y2="143.6"/>
+<rect class="bup" x="34.0" y="112.6" width="4.1" height="31.0"/>
+<line class="wup" x1="42.8" y1="91.7" x2="42.8" y2="123.6"/>
+<rect class="bup" x="40.7" y="114.0" width="4.1" height="9.3"/>
+<line class="wdn" x1="49.5" y1="114.3" x2="49.5" y2="144.0"/>
+<rect class="bdn" x="47.4" y="118.5" width="4.1" height="20.9"/>
+<line class="wdn" x1="56.1" y1="134.8" x2="56.1" y2="146.0"/>
+<rect class="bdn" x="54.1" y="135.9" width="4.1" height="4.8"/>
+<line class="wup" x1="62.8" y1="120.6" x2="62.8" y2="145.2"/>
+<rect class="bup" x="60.8" y="136.5" width="4.1" height="3.1"/>
+<line class="wdn" x1="69.5" y1="127.7" x2="69.5" y2="140.6"/>
+<rect class="bdn" x="67.4" y="138.4" width="4.1" height="1.9"/>
+<line class="wup" x1="76.2" y1="136.2" x2="76.2" y2="147.2"/>
+<rect class="bup" x="74.1" y="136.4" width="4.1" height="3.7"/>
+<line class="wup" x1="82.9" y1="121.7" x2="82.9" y2="139.4"/>
+<rect class="bup" x="80.8" y="130.8" width="4.1" height="5.3"/>
+<line class="wdn" x1="89.6" y1="112.2" x2="89.6" y2="131.1"/>
+<rect class="bdn" x="87.5" y="118.1" width="4.1" height="10.8"/>
+<line class="wup" x1="96.3" y1="110.9" x2="96.3" y2="132.3"/>
+<rect class="bup" x="94.2" y="125.3" width="4.1" height="5.5"/>
+<line class="wup" x1="102.9" y1="114.0" x2="102.9" y2="130.6"/>
+<rect class="bup" x="100.9" y="120.8" width="4.1" height="1.6"/>
+<line class="wup" x1="109.6" y1="109.0" x2="109.6" y2="119.7"/>
+<rect class="bup" x="107.6" y="115.5" width="4.1" height="1.0"/>
+<line class="wdn" x1="116.3" y1="108.0" x2="116.3" y2="128.7"/>
+<rect class="bdn" x="114.2" y="114.2" width="4.1" height="14.1"/>
+<line class="wup" x1="123.0" y1="127.4" x2="123.0" y2="135.2"/>
+<rect class="bup" x="120.9" y="130.2" width="4.1" height="3.6"/>
+<line class="wdn" x1="129.7" y1="128.0" x2="129.7" y2="137.3"/>
+<rect class="bdn" x="127.6" y="130.6" width="4.1" height="2.9"/>
+<line class="wdn" x1="136.4" y1="125.3" x2="136.4" y2="140.8"/>
+<rect class="bdn" x="134.3" y="128.7" width="4.1" height="8.8"/>
+<line class="wup" x1="143.1" y1="147.6" x2="143.1" y2="163.3"/>
+<rect class="bup" x="141.0" y="148.1" width="4.1" height="3.4"/>
+<line class="wup" x1="149.7" y1="139.1" x2="149.7" y2="150.7"/>
+<rect class="bup" x="147.7" y="146.4" width="4.1" height="1.2"/>
+<line class="wdn" x1="156.4" y1="146.6" x2="156.4" y2="156.0"/>
+<rect class="bdn" x="154.4" y="146.6" width="4.1" height="6.9"/>
+<line class="wup" x1="163.1" y1="150.5" x2="163.1" y2="157.1"/>
+<rect class="bup" x="161.0" y="154.0" width="4.1" height="1.1"/>
+<line class="wdn" x1="169.8" y1="151.7" x2="169.8" y2="163.2"/>
+<rect class="bdn" x="167.7" y="152.8" width="4.1" height="7.5"/>
+<line class="wup" x1="176.5" y1="156.7" x2="176.5" y2="162.4"/>
+<rect class="bup" x="174.4" y="157.3" width="4.1" height="2.6"/>
+<line class="wdn" x1="183.2" y1="156.8" x2="183.2" y2="163.4"/>
+<rect class="bdn" x="181.1" y="157.9" width="4.1" height="2.7"/>
+<line class="wup" x1="189.9" y1="156.0" x2="189.9" y2="163.1"/>
+<rect class="bup" x="187.8" y="156.7" width="4.1" height="5.9"/>
+<line class="wdn" x1="196.5" y1="153.7" x2="196.5" y2="159.1"/>
+<rect class="bdn" x="194.5" y="155.2" width="4.1" height="3.1"/>
+<line class="wdn" x1="203.2" y1="158.0" x2="203.2" y2="164.7"/>
+<rect class="bdn" x="201.2" y="158.8" width="4.1" height="2.7"/>
+<line class="wdn" x1="209.9" y1="160.4" x2="209.9" y2="165.3"/>
+<rect class="bdn" x="207.8" y="162.7" width="4.1" height="1.7"/>
+<line class="wup" x1="216.6" y1="159.1" x2="216.6" y2="164.5"/>
+<rect class="bup" x="214.5" y="161.2" width="4.1" height="3.3"/>
+<line class="wup" x1="223.3" y1="148.5" x2="223.3" y2="160.8"/>
+<rect class="bup" x="221.2" y="159.2" width="4.1" height="1.0"/>
+<line class="wdn" x1="230.0" y1="158.5" x2="230.0" y2="166.0"/>
+<rect class="bdn" x="227.9" y="161.1" width="4.1" height="3.9"/>
+<line class="wup" x1="236.7" y1="155.1" x2="236.7" y2="169.4"/>
+<rect class="bup" x="234.6" y="156.5" width="4.1" height="12.1"/>
+<line class="wup" x1="243.3" y1="149.5" x2="243.3" y2="157.2"/>
+<rect class="bup" x="241.3" y="153.5" width="4.1" height="2.6"/>
+<line class="wup" x1="250.0" y1="147.9" x2="250.0" y2="150.8"/>
+<rect class="bup" x="248.0" y="149.6" width="4.1" height="1.0"/>
+<line class="wup" x1="256.7" y1="143.2" x2="256.7" y2="151.2"/>
+<rect class="bup" x="254.6" y="148.0" width="4.1" height="3.1"/>
+<line class="wup" x1="263.4" y1="142.3" x2="263.4" y2="150.6"/>
+<rect class="bup" x="261.3" y="148.9" width="4.1" height="1.5"/>
+<line class="wdn" x1="270.1" y1="149.0" x2="270.1" y2="153.9"/>
+<rect class="bdn" x="268.0" y="149.9" width="4.1" height="2.7"/>
+<line class="wdn" x1="276.8" y1="149.1" x2="276.8" y2="156.8"/>
+<rect class="bdn" x="274.7" y="150.4" width="4.1" height="3.2"/>
+<line class="wup" x1="283.5" y1="149.9" x2="283.5" y2="162.8"/>
+<rect class="bup" x="281.4" y="151.1" width="4.1" height="3.1"/>
+<line class="wdn" x1="290.1" y1="138.5" x2="290.1" y2="158.4"/>
+<rect class="bdn" x="288.1" y="150.9" width="4.1" height="7.0"/>
+<line class="wdn" x1="296.8" y1="149.9" x2="296.8" y2="158.9"/>
+<rect class="bdn" x="294.8" y="150.0" width="4.1" height="1.4"/>
+<line class="wdn" x1="303.5" y1="143.3" x2="303.5" y2="157.0"/>
+<rect class="bdn" x="301.4" y="150.0" width="4.1" height="6.4"/>
+<line class="wdn" x1="310.2" y1="153.3" x2="310.2" y2="160.1"/>
+<rect class="bdn" x="308.1" y="156.7" width="4.1" height="1.0"/>
+<line class="wup" x1="316.9" y1="148.2" x2="316.9" y2="155.4"/>
+<rect class="bup" x="314.8" y="149.7" width="4.1" height="4.7"/>
+<line class="wup" x1="323.6" y1="145.3" x2="323.6" y2="152.4"/>
+<rect class="bup" x="321.5" y="148.6" width="4.1" height="2.1"/>
+<line class="wup" x1="330.3" y1="143.6" x2="330.3" y2="152.9"/>
+<rect class="bup" x="328.2" y="147.8" width="4.1" height="2.4"/>
+<line class="wup" x1="336.9" y1="143.7" x2="336.9" y2="148.1"/>
+<rect class="bup" x="334.9" y="144.8" width="4.1" height="1.3"/>
+<line class="wdn" x1="343.6" y1="141.5" x2="343.6" y2="149.8"/>
+<rect class="bdn" x="341.6" y="143.5" width="4.1" height="3.5"/>
+<line class="wup" x1="350.3" y1="82.4" x2="350.3" y2="128.7"/>
+<rect class="bup" x="348.2" y="84.1" width="4.1" height="40.3"/>
+<line class="wup" x1="357.0" y1="60.8" x2="357.0" y2="79.1"/>
+<rect class="bup" x="354.9" y="63.2" width="4.1" height="15.1"/>
+<line class="wup" x1="363.7" y1="38.4" x2="363.7" y2="66.6"/>
+<rect class="bup" x="361.6" y="40.5" width="4.1" height="24.2"/>
+<line class="wup" x1="370.4" y1="14.8" x2="370.4" y2="45.3"/>
+<rect class="bup" x="368.3" y="28.7" width="4.1" height="11.8"/>
+<line class="wup" x1="377.1" y1="30.0" x2="377.1" y2="48.2"/>
+<rect class="bup" x="375.0" y="38.5" width="4.1" height="1.0"/>
+<line class="wdn" x1="383.7" y1="27.3" x2="383.7" y2="50.6"/>
+<rect class="bdn" x="381.7" y="47.4" width="4.1" height="2.6"/>
+<line class="wdn" x1="390.4" y1="52.1" x2="390.4" y2="68.5"/>
+<rect class="bdn" x="388.4" y="52.1" width="4.1" height="12.2"/>
+<line class="wdn" x1="397.1" y1="64.4" x2="397.1" y2="81.4"/>
+<rect class="bdn" x="395.0" y="66.6" width="4.1" height="8.5"/>
+<line class="wup" x1="403.8" y1="59.3" x2="403.8" y2="81.4"/>
+<rect class="bup" x="401.7" y="60.6" width="4.1" height="12.0"/>
+<line class="wup" x1="410.5" y1="63.4" x2="410.5" y2="75.2"/>
+<rect class="bup" x="408.4" y="66.3" width="4.1" height="2.1"/>
+<line class="wup" x1="417.2" y1="59.2" x2="417.2" y2="70.8"/>
+<rect class="bup" x="415.1" y="59.4" width="4.1" height="4.0"/>
+<line class="wup" x1="423.9" y1="52.2" x2="423.9" y2="64.9"/>
+<rect class="bup" x="421.8" y="52.6" width="4.1" height="7.4"/>
+<line class="wup" x1="430.5" y1="47.4" x2="430.5" y2="55.7"/>
+<rect class="bup" x="428.5" y="49.7" width="4.1" height="1.0"/>
+<line class="wdn" x1="437.2" y1="48.4" x2="437.2" y2="63.4"/>
+<rect class="bdn" x="435.2" y="50.9" width="4.1" height="9.6"/>
+<line class="wup" x1="443.9" y1="42.7" x2="443.9" y2="67.5"/>
+<rect class="bup" x="441.8" y="43.4" width="4.1" height="19.5"/>
+<line class="wup" x1="450.6" y1="40.5" x2="450.6" y2="53.9"/>
+<rect class="bup" x="448.5" y="44.7" width="4.1" height="2.6"/>
+<line class="wdn" x1="457.3" y1="42.7" x2="457.3" y2="60.4"/>
+<rect class="bdn" x="455.2" y="45.7" width="4.1" height="10.5"/>
+<line class="wup" x1="464.0" y1="43.1" x2="464.0" y2="64.9"/>
+<rect class="bup" x="461.9" y="43.6" width="4.1" height="12.3"/>
+<line class="wup" x1="470.7" y1="33.9" x2="470.7" y2="46.7"/>
+<rect class="bup" x="468.6" y="40.1" width="4.1" height="2.1"/>
+<line class="lvbuy" x1="6" y1="33.9" x2="474.0" y2="33.9"/>
+<line class="lvstop" x1="6" y1="64.9" x2="474.0" y2="64.9"/>
+<text class="tbuy" x="480" y="37.4">BUY 25.48</text>
+<text class="tstop" x="480" y="68.4">STOP 21.72</text>
+</svg></div>
+    <div class="mom">momentum rank &nbsp;1m 100th &middot; 3m 98th &middot; 6m 100th</div>
+    <div class="why">base intact, trigger bar has not printed: range 0.63x ATR (needs &lt;=0.6)</div>
+  </article>
+  <article class="card watch">
+    <header>
+      <div class="tk">MRNA</div>
+      <div class="px">145.55</div>
+      <div class="meta">ADR 9.4% &middot; $2,552M/day
+        &middot; base 12d &middot; thrust +224%</div>
+      <div class="badges"><span class="pill ok">0.90x ADR &middot; in check</span></div>
+    </header>
+    <div class="chartwrap"><svg viewBox="0 0 560 190" class="cx" role="img" aria-label="Daily chart with the consolidation shaded, the buy-stop pivot and the initial stop marked.">
+<rect class="riskband" x="6" y="40.8" width="468.0" height="15.8"/>
+<rect class="basezone" x="386.3" y="12" width="88.5" height="162.0"/>
+<polyline class="ma21" points="9.3,167.6 16.0,167.8 22.7,168.1 29.4,168.4 36.1,168.3 42.8,167.9 49.5,168.0 56.1,168.1 62.8,168.1 69.5,168.4 76.2,168.2 82.9,168.0 89.6,167.6 96.3,166.9 102.9,165.5 109.6,164.1 116.3,163.2 123.0,162.3 129.7,161.5 136.4,160.9 143.1,159.5 149.7,157.9 156.4,156.5 163.1,154.9 169.8,152.7 176.5,150.4 183.2,148.6 189.9,147.6 196.5,146.4 203.2,146.2 209.9,146.2 216.6,146.1 223.3,145.9 230.0,146.3 236.7,146.8 243.3,147.5 250.0,148.2 256.7,148.9 263.4,149.7 270.1,150.8 276.8,151.5 283.5,152.2 290.1,153.0 296.8,153.3 303.5,154.0 310.2,154.5 316.9,154.8 323.6,155.1 330.3,155.7 336.9,155.7 343.6,155.5 350.3,155.3 357.0,154.8 363.7,154.4 370.4,154.0 377.1,153.5 383.7,153.2 390.4,140.9 397.1,134.1 403.8,126.7 410.5,120.6 417.2,112.9 423.9,106.9 430.5,102.2 437.2,98.4 443.9,94.7 450.6,89.9 457.3,85.8 464.0,82.4 470.7,79.6"/>
+<polyline class="ma10" points="9.3,168.6 16.0,168.7 22.7,169.1 29.4,169.5 36.1,169.1 42.8,168.2 49.5,168.4 56.1,168.5 62.8,168.5 69.5,169.0 76.2,168.5 82.9,168.1 89.6,167.3 96.3,165.9 102.9,163.3 109.6,160.8 116.3,159.7 123.0,158.5 129.7,157.6 136.4,157.0 143.1,154.9 149.7,152.7 156.4,150.7 163.1,148.6 169.8,145.3 176.5,142.2 183.2,140.0 189.9,139.6 196.5,138.6 203.2,139.7 209.9,140.8 216.6,141.6 223.3,142.0 230.0,143.6 236.7,145.1 243.3,146.8 250.0,148.2 256.7,149.7 263.4,151.2 270.1,153.0 276.8,154.1 283.5,155.0 290.1,156.1 296.8,156.2 303.5,156.9 310.2,157.5 316.9,157.5 323.6,157.7 330.3,158.4 336.9,157.8 343.6,157.2 350.3,156.5 357.0,155.3 363.7,154.3 370.4,153.5 377.1,152.6 383.7,152.3 390.4,127.7 397.1,116.6 403.8,104.9 410.5,96.7 417.2,85.6 423.9,78.6 430.5,74.3 437.2,71.8 443.9,69.3 450.6,64.2 457.3,60.8 464.0,58.4 470.7,57.2"/>
+<line class="wup" x1="9.3" y1="169.0" x2="9.3" y2="171.0"/>
+<rect class="bup" x="7.3" y="169.0" width="4.1" height="1.0"/>
+<line class="wdn" x1="16.0" y1="167.0" x2="16.0" y2="169.9"/>
+<rect class="bdn" x="14.0" y="169.3" width="4.1" height="1.0"/>
+<line class="wdn" x1="22.7" y1="169.6" x2="22.7" y2="173.0"/>
+<rect class="bdn" x="20.6" y="169.6" width="4.1" height="1.2"/>
+<line class="wup" x1="29.4" y1="170.7" x2="29.4" y2="173.4"/>
+<rect class="bup" x="27.3" y="171.3" width="4.1" height="1.0"/>
+<line class="wup" x1="36.1" y1="166.6" x2="36.1" y2="171.7"/>
+<rect class="bup" x="34.0" y="167.2" width="4.1" height="4.5"/>
+<line class="wup" x1="42.8" y1="163.8" x2="42.8" y2="167.3"/>
+<rect class="bup" x="40.7" y="164.2" width="4.1" height="2.6"/>
+<line class="wdn" x1="49.5" y1="164.2" x2="49.5" y2="170.4"/>
+<rect class="bdn" x="47.4" y="165.2" width="4.1" height="4.0"/>
+<line class="wdn" x1="56.1" y1="167.3" x2="56.1" y2="169.9"/>
+<rect class="bdn" x="54.1" y="168.2" width="4.1" height="1.0"/>
+<line class="wdn" x1="62.8" y1="168.0" x2="62.8" y2="171.6"/>
+<rect class="bdn" x="60.8" y="168.0" width="4.1" height="1.0"/>
+<line class="wdn" x1="69.5" y1="167.8" x2="69.5" y2="171.3"/>
+<rect class="bdn" x="67.4" y="169.4" width="4.1" height="1.5"/>
+<line class="wup" x1="76.2" y1="166.1" x2="76.2" y2="170.5"/>
+<rect class="bup" x="74.1" y="166.5" width="4.1" height="3.8"/>
+<line class="wdn" x1="82.9" y1="164.0" x2="82.9" y2="166.5"/>
+<rect class="bdn" x="80.8" y="166.1" width="4.1" height="1.0"/>
+<line class="wup" x1="89.6" y1="163.4" x2="89.6" y2="166.3"/>
+<rect class="bup" x="87.5" y="163.5" width="4.1" height="1.0"/>
+<line class="wup" x1="96.3" y1="156.8" x2="96.3" y2="164.1"/>
+<rect class="bup" x="94.2" y="159.6" width="4.1" height="3.8"/>
+<line class="wup" x1="102.9" y1="151.4" x2="102.9" y2="160.7"/>
+<rect class="bup" x="100.9" y="152.0" width="4.1" height="6.7"/>
+<line class="wup" x1="109.6" y1="144.8" x2="109.6" y2="153.2"/>
+<rect class="bup" x="107.6" y="149.4" width="4.1" height="1.0"/>
+<line class="wdn" x1="116.3" y1="147.5" x2="116.3" y2="157.1"/>
+<rect class="bdn" x="114.2" y="149.2" width="4.1" height="5.7"/>
+<line class="wup" x1="123.0" y1="149.3" x2="123.0" y2="156.1"/>
+<rect class="bup" x="120.9" y="152.9" width="4.1" height="2.3"/>
+<line class="wdn" x1="129.7" y1="150.8" x2="129.7" y2="154.3"/>
+<rect class="bdn" x="127.6" y="152.7" width="4.1" height="1.0"/>
+<line class="wdn" x1="136.4" y1="151.9" x2="136.4" y2="156.6"/>
+<rect class="bdn" x="134.3" y="153.7" width="4.1" height="1.0"/>
+<line class="wup" x1="143.1" y1="143.0" x2="143.1" y2="155.0"/>
+<rect class="bup" x="141.0" y="145.4" width="4.1" height="9.3"/>
+<line class="wup" x1="149.7" y1="142.3" x2="149.7" y2="146.6"/>
+<rect class="bup" x="147.7" y="142.5" width="4.1" height="2.1"/>
+<line class="wup" x1="156.4" y1="138.2" x2="156.4" y2="143.1"/>
+<rect class="bup" x="154.4" y="142.1" width="4.1" height="1.0"/>
+<line class="wup" x1="163.1" y1="137.5" x2="163.1" y2="143.5"/>
+<rect class="bup" x="161.0" y="139.2" width="4.1" height="2.9"/>
+<line class="wup" x1="169.8" y1="128.5" x2="169.8" y2="137.7"/>
+<rect class="bup" x="167.7" y="130.5" width="4.1" height="7.2"/>
+<line class="wup" x1="176.5" y1="123.5" x2="176.5" y2="133.2"/>
+<rect class="bup" x="174.4" y="128.0" width="4.1" height="3.9"/>
+<line class="wdn" x1="183.2" y1="126.7" x2="183.2" y2="133.3"/>
+<rect class="bdn" x="181.1" y="127.7" width="4.1" height="2.8"/>
+<line class="wdn" x1="189.9" y1="132.2" x2="189.9" y2="138.1"/>
+<rect class="bdn" x="187.8" y="133.4" width="4.1" height="4.2"/>
+<line class="wup" x1="196.5" y1="134.0" x2="196.5" y2="138.4"/>
+<rect class="bup" x="194.5" y="134.3" width="4.1" height="3.3"/>
+<line class="wdn" x1="203.2" y1="134.1" x2="203.2" y2="145.4"/>
+<rect class="bdn" x="201.2" y="134.1" width="4.1" height="10.1"/>
+<line class="wup" x1="209.9" y1="142.7" x2="209.9" y2="147.5"/>
+<rect class="bup" x="207.8" y="145.7" width="4.1" height="1.0"/>
+<line class="wup" x1="216.6" y1="144.7" x2="216.6" y2="147.2"/>
+<rect class="bup" x="214.5" y="145.2" width="4.1" height="1.0"/>
+<line class="wup" x1="223.3" y1="144.0" x2="223.3" y2="147.0"/>
+<rect class="bup" x="221.2" y="144.2" width="4.1" height="1.0"/>
+<line class="wdn" x1="230.0" y1="145.2" x2="230.0" y2="150.8"/>
+<rect class="bdn" x="227.9" y="145.6" width="4.1" height="4.7"/>
+<line class="wup" x1="236.7" y1="150.2" x2="236.7" y2="152.8"/>
+<rect class="bup" x="234.6" y="151.9" width="4.1" height="1.0"/>
+<line class="wdn" x1="243.3" y1="151.2" x2="243.3" y2="154.9"/>
+<rect class="bdn" x="241.3" y="152.4" width="4.1" height="2.4"/>
+<line class="wup" x1="250.0" y1="153.1" x2="250.0" y2="155.8"/>
+<rect class="bup" x="248.0" y="154.5" width="4.1" height="1.0"/>
+<line class="wdn" x1="256.7" y1="154.3" x2="256.7" y2="156.8"/>
+<rect class="bdn" x="254.6" y="154.7" width="4.1" height="1.7"/>
+<line class="wdn" x1="263.4" y1="156.0" x2="263.4" y2="158.6"/>
+<rect class="bdn" x="261.3" y="157.5" width="4.1" height="1.0"/>
+<line class="wdn" x1="270.1" y1="157.1" x2="270.1" y2="161.5"/>
+<rect class="bdn" x="268.0" y="157.4" width="4.1" height="3.8"/>
+<line class="wup" x1="276.8" y1="157.6" x2="276.8" y2="160.8"/>
+<rect class="bup" x="274.7" y="159.3" width="4.1" height="1.1"/>
+<line class="wup" x1="283.5" y1="159.1" x2="283.5" y2="162.1"/>
+<rect class="bup" x="281.4" y="159.1" width="4.1" height="1.2"/>
+<line class="wdn" x1="290.1" y1="158.6" x2="290.1" y2="161.1"/>
+<rect class="bdn" x="288.1" y="160.0" width="4.1" height="1.0"/>
+<line class="wup" x1="296.8" y1="156.4" x2="296.8" y2="160.7"/>
+<rect class="bup" x="294.8" y="156.6" width="4.1" height="2.3"/>
+<line class="wdn" x1="303.5" y1="154.7" x2="303.5" y2="160.4"/>
+<rect class="bdn" x="301.4" y="156.7" width="4.1" height="3.6"/>
+<line class="wup" x1="310.2" y1="156.5" x2="310.2" y2="162.9"/>
+<rect class="bup" x="308.1" y="159.9" width="4.1" height="1.0"/>
+<line class="wup" x1="316.9" y1="156.1" x2="316.9" y2="159.0"/>
+<rect class="bup" x="314.8" y="157.7" width="4.1" height="1.0"/>
+<line class="wdn" x1="323.6" y1="154.8" x2="323.6" y2="159.4"/>
+<rect class="bdn" x="321.5" y="156.5" width="4.1" height="2.1"/>
+<line class="wdn" x1="330.3" y1="155.3" x2="330.3" y2="161.6"/>
+<rect class="bdn" x="328.2" y="157.1" width="4.1" height="4.4"/>
+<line class="wup" x1="336.9" y1="154.8" x2="336.9" y2="160.5"/>
+<rect class="bup" x="334.9" y="155.1" width="4.1" height="5.2"/>
+<line class="wup" x1="343.6" y1="153.2" x2="343.6" y2="156.0"/>
+<rect class="bup" x="341.6" y="154.3" width="4.1" height="1.0"/>
+<line class="wup" x1="350.3" y1="152.4" x2="350.3" y2="155.8"/>
+<rect class="bup" x="348.2" y="153.4" width="4.1" height="1.0"/>
+<line class="wup" x1="357.0" y1="149.0" x2="357.0" y2="155.0"/>
+<rect class="bup" x="354.9" y="149.7" width="4.1" height="3.7"/>
+<line class="wdn" x1="363.7" y1="147.7" x2="363.7" y2="151.3"/>
+<rect class="bdn" x="361.6" y="149.6" width="4.1" height="1.0"/>
+<line class="wup" x1="370.4" y1="149.6" x2="370.4" y2="153.1"/>
+<rect class="bup" x="368.3" y="150.1" width="4.1" height="1.0"/>
+<line class="wdn" x1="377.1" y1="147.5" x2="377.1" y2="150.6"/>
+<rect class="bdn" x="375.0" y="148.4" width="4.1" height="1.0"/>
+<line class="wdn" x1="383.7" y1="148.8" x2="383.7" y2="151.6"/>
+<rect class="bdn" x="381.7" y="150.5" width="4.1" height="1.0"/>
+<line class="wup" x1="390.4" y1="14.5" x2="390.4" y2="89.0"/>
+<rect class="bup" x="388.4" y="17.3" width="4.1" height="69.8"/>
+<line class="wdn" x1="397.1" y1="40.5" x2="397.1" y2="72.0"/>
+<rect class="bdn" x="395.0" y="46.3" width="4.1" height="20.1"/>
+<line class="wup" x1="403.8" y1="35.1" x2="403.8" y2="67.5"/>
+<rect class="bup" x="401.7" y="52.3" width="4.1" height="14.4"/>
+<line class="wdn" x1="410.5" y1="51.8" x2="410.5" y2="70.4"/>
+<rect class="bdn" x="408.4" y="55.2" width="4.1" height="4.6"/>
+<line class="wup" x1="417.2" y1="32.8" x2="417.2" y2="56.9"/>
+<rect class="bup" x="415.1" y="35.9" width="4.1" height="18.3"/>
+<line class="wdn" x1="423.9" y1="39.1" x2="423.9" y2="52.3"/>
+<rect class="bdn" x="421.8" y="41.4" width="4.1" height="5.4"/>
+<line class="wdn" x1="430.5" y1="48.1" x2="430.5" y2="60.1"/>
+<rect class="bdn" x="428.5" y="53.4" width="4.1" height="1.7"/>
+<line class="wup" x1="437.2" y1="59.8" x2="437.2" y2="66.4"/>
+<rect class="bup" x="435.2" y="60.8" width="4.1" height="1.0"/>
+<line class="wup" x1="443.9" y1="53.4" x2="443.9" y2="65.7"/>
+<rect class="bup" x="441.8" y="58.0" width="4.1" height="7.5"/>
+<line class="wup" x1="450.6" y1="40.8" x2="450.6" y2="60.7"/>
+<rect class="bup" x="448.5" y="41.3" width="4.1" height="16.8"/>
+<line class="wdn" x1="457.3" y1="38.8" x2="457.3" y2="50.6"/>
+<rect class="bdn" x="455.2" y="44.8" width="4.1" height="1.0"/>
+<line class="wup" x1="464.0" y1="46.2" x2="464.0" y2="55.1"/>
+<rect class="bup" x="461.9" y="47.8" width="4.1" height="3.5"/>
+<line class="wdn" x1="470.7" y1="40.8" x2="470.7" y2="56.6"/>
+<rect class="bdn" x="468.6" y="42.1" width="4.1" height="9.7"/>
+<line class="lvbuy" x1="6" y1="40.8" x2="474.0" y2="40.8"/>
+<line class="lvstop" x1="6" y1="56.6" x2="474.0" y2="56.6"/>
+<text class="tbuy" x="480" y="44.3">BUY 154.69</text>
+<text class="tstop" x="480" y="60.1">STOP 141.52</text>
+</svg></div>
+    <div class="mom">momentum rank &nbsp;1m 100th &middot; 3m 100th &middot; 6m 97th</div>
+    <div class="why">base intact, trigger bar has not printed: range 0.78x ATR (needs &lt;=0.6)</div>
+  </article></div>
+
+<footer>
+  <p><b>How this is built.</b> Whole-US-market daily bars, point-in-time. Universe: close
+  &ge; $5, 20-day median dollar volume &ge; $20M,
+  ADR between 3% and 15%, at least 130 sessions of history, top
+  7% on 1/3/6-month return. Pattern: a &ge;30% thrust
+  within 25 sessions, then a 10&ndash;50 session base
+  under that peak with higher lows, contracting range and volume drying up, and a trigger
+  bar whose range is &le;0.6&times;ATR on &le;0.8&times;
+  average volume. Buy stop at that bar's high; initial stop at the 3-bar structural low;
+  risk must be &le;1&times; ADR.</p>
+  <p><b>One addition of mine.</b> The upper ADR bound of 15% is not in
+  Kullam&auml;gi's rules &mdash; he only says low ADR is trash and wants 3&ndash;6%+. Without a
+  ceiling the scan surfaces names with a 35% average daily range, where even 0.3&times;ADR is
+  an 11% stop. Re-running the backtest with this bound moved mean R from
+  &minus;0.394 to &minus;0.371 (and to &minus;0.222 at a 10% bound) &mdash; less bleed, still
+  negative, and chosen after seeing the data. Treat it as a sanity filter, not an edge.</p>
+  <p><b>No look-ahead.</b> Every test reads bars up to and including the as-of close. The
+  regime is evaluated on the as-of session, not the entry session.</p>
+  <p>Generated 2026-09-07 09:11 UTC. Share counts are quoted <b>per $10,000 of equity</b> at
+  0.5% risk with a 25% per-name cap, whole shares &mdash; a sizing
+  yardstick, not anyone's account. Educational research, not advice.</p>
+</footer>
+</div></body></html>
