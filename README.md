@@ -32,10 +32,16 @@ are objective and worth watching, not because the edge is established.
 Pages dispatch → Discord. The scan engine lives in `Code\kullamagy_research\bt` so the
 research and the routine never diverge.
 
-Scheduled 22:15 LU Mon–Sat (16:15 ET). Because that is only fifteen minutes after the
-close, the fetch retries for up to thirty minutes until the session's ticker count looks
-complete, rather than publishing a partial universe. Saturday targets Friday and normally
-finds it already published — it is Friday's safety net.
+Scheduled **09:00 LU Mon–Sat**. The data plan does not serve the *current* day at all
+(today returns 403 while weekends return 200 with zero rows), so an evening same-day run
+could only ever fetch the previous close — by which time today has already traded. A
+morning run at 09:00 LU (03:00 ET) reads yesterday's close and publishes roughly six and a
+half hours before the 15:30 LU US open.
+
+Targeting walks back from yesterday until the API actually returns rows, so holidays,
+weekends and any provider write lag are handled without calendar arithmetic. If the
+session it lands on is already published the run is a clean no-op, which makes every run
+idempotent and makes the extra days free retries.
 
 Failure is silent by design: nothing is published, the reason goes to
 `ICT_kullamagi_scan_log.txt` and `needs_attention.log`. Zero candidates is not a failure —

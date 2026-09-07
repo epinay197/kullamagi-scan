@@ -36,8 +36,9 @@ PAGES_URL = "https://epinay197.github.io/kullamagi-scan/"
 # A complete US session lists roughly 12k common-stock symbols. Well below that and
 # the aggregates are still being written, so the universe would be wrong.
 MIN_TICKERS = 8_000
-FRESH_TRIES = 12          # 12 x 150s = 30 minutes of patience
 FRESH_WAIT = 150
+FRESH_TRIES_PARTIAL = 12  # data is clearly being written -> wait up to 30 min
+FRESH_TRIES_EMPTY = 4     # nothing at all -> probably a holiday, give up after 10 min
 
 sys.path.insert(0, str(ENGINE))
 
@@ -76,9 +77,12 @@ def post_discord(text):
         log("discord: no webhook configured, skipping")
         return False
     try:
+        # Discord sits behind Cloudflare, which rejects Python-urllib's default
+        # user agent with error 1010. Without this header every post 403s silently.
         req = urllib.request.Request(
             url, data=json.dumps({"content": text[:1900]}).encode(),
-            headers={"Content-Type": "application/json"})
+            headers={"Content-Type": "application/json",
+                     "User-Agent": "DiscordBot (https://github.com/epinay197/kullamagi-scan, 1.0)"})
         with urllib.request.urlopen(req, timeout=10) as r:
             ok = 200 <= r.status < 300
         log(f"discord posted={ok}")
@@ -89,19 +93,44 @@ def post_discord(text):
 
 
 # ------------------------------------------------------------------ data
-def target_session():
-    """The US session this run is meant to cover.
+def target_session(published):
+    """The most recent session that actually has data, walking back from yesterday.
 
-    Fired at 22:15 LU the same calendar day is the session that just closed. A Saturday
-    run has no new session, so it targets Friday and will normally find it already
-    published - which is the point: Saturday is Friday's safety net.
+    The data plan does not serve the CURRENT day at all - today returns 403 while
+    weekends return 200 with zero rows - so calendar arithmetic is not enough. Walking
+    back until the API yields rows makes this correct through holidays, weekends and
+    whatever the provider's write lag turns out to be.
+
+    Returns (date, n_tickers) or (None, 0).
     """
-    today = dt.date.today()
-    if today.weekday() == 5:                       # Saturday
-        return today - dt.timedelta(days=1)
-    if today.weekday() == 6:                       # Sunday, shouldn't be scheduled
-        return today - dt.timedelta(days=2)
-    return today
+    import massive as M
+
+    if "--session" in sys.argv:
+        d = dt.date.fromisoformat(sys.argv[sys.argv.index("--session") + 1])
+        return d, -1                                   # caller fetches it explicitly
+
+    day = dt.date.today() - dt.timedelta(days=1)
+    for _ in range(8):                                 # covers a long holiday weekend
+        try:
+            j = M.grouped_daily(day.isoformat())
+            n = len(j.get("results") or [])
+            if n >= MIN_TICKERS:
+                log(f"most recent session with data: {day} ({day:%a}) - {n} tickers")
+                if day.isoformat() in published:
+                    log(f"{day} already published - nothing to do")
+                    return None, 0
+                return day, n
+            log(f"{day} ({day:%a}): {n} rows - not a session, stepping back")
+        except M.NotAuthorized:
+            log(f"{day} ({day:%a}): 403 - outside the served window, stepping back")
+        except Exception as e:
+            log(f"{day}: {type(e).__name__} {e} - stepping back")
+        day -= dt.timedelta(days=1)
+    return None, 0
+
+
+def already_published():
+    return {p.stem.replace("scan_", "") for p in DOCS.glob("scan_*.html")}
 
 
 def fetch_until_settled(day):
@@ -120,7 +149,11 @@ def fetch_until_settled(day):
 
     cols = {"T": "ticker", "o": "open", "h": "high", "l": "low", "c": "close",
             "v": "volume", "n": "trades", "vw": "vwap"}
-    for attempt in range(1, FRESH_TRIES + 1):
+    saw_partial = False
+    attempt = 0
+    while True:
+        attempt += 1
+        limit = FRESH_TRIES_PARTIAL if saw_partial else FRESH_TRIES_EMPTY
         try:
             j = M.grouped_daily(day.isoformat())
         except M.NotAuthorized:
@@ -131,7 +164,7 @@ def fetch_until_settled(day):
             j = {}
         res = j.get("results") or []
         if not res:
-            log(f"attempt {attempt}: no results yet (holiday, or not written)")
+            log(f"attempt {attempt}/{limit}: no results (holiday, or not written yet)")
         else:
             df = pd.DataFrame(res).rename(columns=cols)
             df = df[[c for c in cols.values() if c in df.columns]].copy()
@@ -141,10 +174,13 @@ def fetch_until_settled(day):
                 df.to_parquet(dest, index=False)
                 log(f"{day} settled with {len(df)} tickers on attempt {attempt}")
                 return len(df)
+            saw_partial = True
             log(f"attempt {attempt}: only {len(df)} tickers, below {MIN_TICKERS} - waiting")
-        if attempt < FRESH_TRIES:
-            time.sleep(FRESH_WAIT)
-    return 0
+        if attempt >= limit:
+            log(f"gave up after {attempt} attempts "
+                f"({'partial data never completed' if saw_partial else 'no data at all'})")
+            return 0
+        time.sleep(FRESH_WAIT)
 
 
 # ------------------------------------------------------------------ publish
@@ -183,8 +219,8 @@ def git_publish(asof, n_cand):
     log(f"push rc={p.returncode} {(p.stdout + p.stderr).strip()[:160]}")
     if p.returncode != 0:
         return False
-    d = run(["gh", "workflow", "run", "pages.yml"], timeout=180)
-    log(f"pages dispatch rc={d.returncode} {(d.stdout + d.stderr).strip()[:160]}")
+    # Pages serves docs/ straight off main, so the push itself triggers the rebuild -
+    # there is no workflow to dispatch and no workflow token scope needed.
     return True
 
 
@@ -192,12 +228,15 @@ def git_publish(asof, n_cand):
 def main():
     log("=== run start ===")
     DOCS.mkdir(parents=True, exist_ok=True)
-    day = target_session()
+    published = already_published()
+    day, n = target_session(published)
+    if day is None:
+        log("nothing to publish (already current, or no served session found)")
+        return 0
     log(f"target session {day} ({day:%a})")
 
-    n = fetch_until_settled(day)
-    if n == 0:
-        log("ABORT: session never settled or was a holiday - publishing nothing")
+    if fetch_until_settled(day) == 0:
+        log("ABORT: session never settled - publishing nothing")
         attention(f"scan {day}: data never settled, page not updated")
         return 2
 
