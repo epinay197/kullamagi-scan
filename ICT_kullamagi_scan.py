@@ -29,8 +29,7 @@ PY = r"C:\Users\Anwender\AppData\Local\Python\bin\python.exe"
 LOG = REPO / "ICT_kullamagi_scan_log.txt"
 NEEDS_ATTENTION = Path(r"C:\Users\Anwender\needs_attention.log")
 
-EQUITY = 10_000.0
-RISK_PCT = 0.5
+# sizing yardstick now lives in the engine's config so page and wrapper agree
 PAGES_URL = "https://epinay197.github.io/kullamagi-scan/"
 
 # A complete US session lists roughly 12k common-stock symbols. Well below that and
@@ -117,7 +116,10 @@ def target_session(published):
             if n >= MIN_TICKERS:
                 log(f"most recent session with data: {day} ({day:%a}) - {n} tickers")
                 if day.isoformat() in published:
-                    log(f"{day} already published - nothing to do")
+                    import calendar_us as CAL
+                    gap = CAL.gap_note(day, dt.date.today())
+                    log(f"{day} already published - nothing to do"
+                        + (f" (market shut since: {gap})" if gap else ""))
                     return None, 0
                 return day, n
             log(f"{day} ({day:%a}): {n} rows - not a session, stepping back")
@@ -254,7 +256,7 @@ def main():
         attention(f"scan {day}: panel latest is {have.date()}, page not updated")
         return 3
 
-    s = S.run(panel, asof=have, equity=EQUITY, risk_pct=RISK_PCT)
+    s = S.run(panel, asof=have)
     name = f"scan_{have.date()}.html"
     (DOCS / name).write_text(
         R.page(s, results_url="https://claude.ai/code/artifact/289410ac-2e27-49d3-a9e1-b44f0c069c11",

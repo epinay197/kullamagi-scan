@@ -43,6 +43,11 @@ weekends and any provider write lag are handled without calendar arithmetic. If 
 session it lands on is already published the run is a clean no-op, which makes every run
 idempotent and makes the extra days free retries.
 
+The task runs with an **Interactive** logon, which matches all 51 existing ICT_/MOTC_/FIN_
+tasks on this machine and is sufficient because autologon is enabled (`AutoAdminLogon=1`)
+— the session always exists, so there is nothing for an S4U principal to fix.
+`WakeToRun` is on and battery conditions are off.
+
 Failure is silent by design: nothing is published, the reason goes to
 `ICT_kullamagi_scan_log.txt` and `needs_attention.log`. Zero candidates is not a failure —
 it publishes, because that is information.
