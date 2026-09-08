@@ -1,0 +1,12 @@
+{
+  "asof": "2026-09-04",
+  "page": "scan_2026-09-04.html",
+  "candidates": 3,
+  "regime_on": false,
+  "entry_session": "2026-09-08",
+  "tickers": [
+    "REPL",
+    "SLS",
+    "ABCL"
+  ]
+}
