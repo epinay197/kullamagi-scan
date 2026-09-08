@@ -1,8 +1,11 @@
 """Nightly Kullamagi scan: fetch, scan, render, publish to GitHub Pages, ping Discord.
 
-Runs 22:15 LU Mon-Sat (= 16:15 ET, fifteen minutes after the US close). That is early
-enough that the grouped daily aggregates may not have settled yet, so the fetch retries
-until the session looks complete rather than publishing a partial universe.
+Runs 09:00 LU Mon-Sat. Not after the close: the data plan returns 403 for the CURRENT
+day, so the earliest a session can be scanned is the following morning. The fetch still
+retries until the ticker count looks complete rather than publishing a partial universe.
+
+On a day with no new session (weekend, holiday) the run is a deliberate no-op, and it
+posts a one-line heartbeat so that silence from this routine always means broken.
 
 The scan engine itself lives in Code\\kullamagy_research\\bt so the research and the
 routine never fork. This file is only the wrapper: freshness, publish, alert.
@@ -28,6 +31,7 @@ ENGINE = Path(r"C:\Users\Anwender\Code\kullamagy_research\bt")
 PY = r"C:\Users\Anwender\AppData\Local\Python\bin\python.exe"
 LOG = REPO / "ICT_kullamagi_scan_log.txt"
 NEEDS_ATTENTION = Path(r"C:\Users\Anwender\needs_attention.log")
+HEARTBEAT_STATE = REPO / ".last_heartbeat"   # one skip-day ping per day, not per run
 
 # sizing yardstick now lives in the engine's config so page and wrapper agree
 PAGES_URL = "https://epinay197.github.io/kullamagi-scan/"
@@ -100,13 +104,15 @@ def target_session(published):
     back until the API yields rows makes this correct through holidays, weekends and
     whatever the provider's write lag turns out to be.
 
-    Returns (date, n_tickers) or (None, 0).
+    Returns (date, n_tickers, skip). skip is None when there is work to do, otherwise a
+    dict saying why this run is a no-op: kind "current" is benign (nothing new to scan),
+    kind "nodata" means the feed itself is not answering and is a fault.
     """
     import massive as M
 
     if "--session" in sys.argv:
         d = dt.date.fromisoformat(sys.argv[sys.argv.index("--session") + 1])
-        return d, -1                                   # caller fetches it explicitly
+        return d, -1, None                             # caller fetches it explicitly
 
     day = dt.date.today() - dt.timedelta(days=1)
     for _ in range(8):                                 # covers a long holiday weekend
@@ -120,15 +126,15 @@ def target_session(published):
                     gap = CAL.gap_note(day, dt.date.today())
                     log(f"{day} already published - nothing to do"
                         + (f" (market shut since: {gap})" if gap else ""))
-                    return None, 0
-                return day, n
+                    return None, 0, {"kind": "current", "session": day, "gap": gap}
+                return day, n, None
             log(f"{day} ({day:%a}): {n} rows - not a session, stepping back")
         except M.NotAuthorized:
             log(f"{day} ({day:%a}): 403 - outside the served window, stepping back")
         except Exception as e:
             log(f"{day}: {type(e).__name__} {e} - stepping back")
         day -= dt.timedelta(days=1)
-    return None, 0
+    return None, 0, {"kind": "nodata"}
 
 
 def already_published():
@@ -186,7 +192,7 @@ def fetch_until_settled(day):
 
 
 # ------------------------------------------------------------------ publish
-def write_index(newest_name, asof, n_cand, regime_on):
+def write_index(newest_name, asof, n_cand, regime_on, entry_session=None, tickers=None):
     state = "LONG BOOK OPEN" if regime_on else "STAND ASIDE"
     (DOCS / "index.html").write_text(f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8">
@@ -198,6 +204,77 @@ a{{color:#60a5fa}}</style></head><body>
 <p>Redirecting to the <a href="{newest_name}">{asof} scan</a>
 &mdash; {state}, {n_cand} candidate{"" if n_cand == 1 else "s"}&hellip;</p>
 </body></html>""", encoding="utf-8")
+
+    # Sidecar so a skip-day heartbeat can report the standing plan without rebuilding
+    # the panel. On a no-op there is no new data to scan - only news to relay.
+    (DOCS / "latest.json").write_text(json.dumps({
+        "asof": str(asof), "page": newest_name, "candidates": int(n_cand),
+        "regime_on": bool(regime_on), "entry_session": str(entry_session or ""),
+        "tickers": list(tickers or []),
+    }, indent=2), encoding="utf-8")
+
+
+def read_latest():
+    """The last published scan's summary, or None if it predates the sidecar."""
+    try:
+        return json.loads((DOCS / "latest.json").read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def next_scan_note():
+    """The task fires 09:00 LU Monday to Saturday, so the next run is tomorrow unless
+    tomorrow is a Sunday."""
+    d = dt.date.today() + dt.timedelta(days=1)
+    while d.weekday() == 6:
+        d += dt.timedelta(days=1)
+    return f"{d:%a %d %b} 09:00 LU"
+
+
+def heartbeat_due():
+    """One heartbeat per calendar day. The task fires once, but manual reruns should not
+    spam the channel."""
+    try:
+        return (HEARTBEAT_STATE.read_text(encoding="utf-8").strip()
+                != dt.date.today().isoformat())
+    except Exception:
+        return True
+
+
+def mark_heartbeat():
+    try:
+        HEARTBEAT_STATE.write_text(dt.date.today().isoformat(), encoding="utf-8")
+    except Exception as e:
+        log(f"could not record heartbeat state: {e}")
+
+
+def skip_heartbeat(skip):
+    """One line on a skip day.
+
+    The point is not "the scan ran". It is that the plan already on the page is aimed at
+    a session that may well be TODAY, and whether the regime says it is actionable.
+    """
+    day, gap = skip["session"], skip.get("gap")
+    line = f"**Kullamagi scan** - no new session since {day:%a %d %b}"
+    if gap:
+        line += f", market shut for {gap}"
+    line += ". Page unchanged."
+
+    lat = read_latest()
+    if lat:
+        n = int(lat.get("candidates") or 0)
+        ent, tk = lat.get("entry_session") or "", lat.get("tickers") or []
+        state = ("LONG BOOK OPEN" if lat.get("regime_on")
+                 else "REGIME OFF - not actionable")
+        line += f" Standing plan: {n} candidate{'' if n == 1 else 's'}"
+        if tk:
+            line += " [" + ", ".join(tk[:8]) + "]"
+        if ent:
+            today = ent[:10] == dt.date.today().isoformat()
+            line += f" for the {ent} session{' (today)' if today else ''}"
+        line += f" - {state}."
+    line += f" Next scan {next_scan_note()}. <{PAGES_URL}>"
+    post_discord(line)
 
 
 def git_publish(asof, n_cand):
@@ -231,10 +308,24 @@ def main():
     log("=== run start ===")
     DOCS.mkdir(parents=True, exist_ok=True)
     published = already_published()
-    day, n = target_session(published)
+    day, n, skip = target_session(published)
     if day is None:
-        log("nothing to publish (already current, or no served session found)")
-        return 0
+        if skip and skip["kind"] == "current":
+            log("nothing to publish - already current")
+            if heartbeat_due():
+                skip_heartbeat(skip)
+                mark_heartbeat()
+            else:
+                log("heartbeat already sent today - staying quiet")
+            return 0
+        # Eight days of walk-back with nothing served is not a shut market, it is a
+        # broken feed. Say so loudly rather than exiting clean.
+        log("ABORT: no served session found in the last 8 days")
+        attention("no served session found in 8 days - check the data entitlement")
+        post_discord("**Kullamagi scan** - FAULT: no session served in the last 8 "
+                     "days. That is the feed or the entitlement, not the market. "
+                     f"Next scan {next_scan_note()}.")
+        return 3
     log(f"target session {day} ({day:%a})")
 
     if fetch_until_settled(day) == 0:
@@ -262,7 +353,9 @@ def main():
         R.page(s, results_url="https://claude.ai/code/artifact/289410ac-2e27-49d3-a9e1-b44f0c069c11",
                playbook_url="https://claude.ai/code/artifact/b34345be-b35b-4337-aa06-34a0be26c806"),
         encoding="utf-8")
-    write_index(name, have.date(), len(s["candidates"]), s["regime_on"])
+    write_index(name, have.date(), len(s["candidates"]), s["regime_on"],
+                entry_session=s.get("entry_date"),
+                tickers=[c["ticker"] for c in s["candidates"]])
     log(f"rendered {name}: {len(s['candidates'])} candidates, "
         f"{len(s['gated'])} gated, {len(s['watchlist'])} watchlist, "
         f"regime {'ON' if s['regime_on'] else 'OFF'}")

@@ -3,3 +3,4 @@ __pycache__/
 *_log.txt
 .discord_webhook.txt
 data/
+.last_heartbeat
