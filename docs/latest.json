@@ -1,11 +1,11 @@
 {
-  "asof": "2026-09-08",
-  "page": "scan_2026-09-08.html",
+  "asof": "2026-09-09",
+  "page": "scan_2026-09-09.html",
   "candidates": 2,
-  "regime_on": false,
-  "entry_session": "2026-09-09",
+  "regime_on": true,
+  "entry_session": "2026-09-10",
   "tickers": [
-    "REPL",
+    "PGEN",
     "MRNA"
   ]
 }
