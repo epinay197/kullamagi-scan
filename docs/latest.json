@@ -1,11 +1,8 @@
 {
-  "asof": "2026-09-10",
-  "page": "scan_2026-09-10.html",
-  "candidates": 2,
-  "regime_on": false,
-  "entry_session": "2026-09-11",
-  "tickers": [
-    "SLS",
-    "MRNA"
-  ]
+  "asof": "2026-09-11",
+  "page": "scan_2026-09-11.html",
+  "candidates": 0,
+  "regime_on": true,
+  "entry_session": "2026-09-14",
+  "tickers": []
 }
