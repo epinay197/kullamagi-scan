@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kullamagi scan &middot; 2026-09-24</title>
+<style>
+:root{--bg:#0d1117;--panel:#161b22;--panel2:#1c232b;--border:#30363d;--text:#e6edf3;
+  --muted:#8b949e;--accent:#1f6feb;--blue:#60a5fa;--green:#4ade80;--red:#f87171;
+  --yellow:#fbbf24;--purple:#c084fc}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.55}
+.wrap{max-width:1180px;margin:0 auto;padding:0 18px 70px}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+h1{margin:0;font-size:26px;letter-spacing:-.01em}
+h2{margin:34px 0 12px;font-size:16px;text-transform:uppercase;letter-spacing:.12em;
+  color:var(--muted);font-weight:600}
+header.top{padding:26px 0 18px;border-bottom:1px solid var(--border);
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:14px}
+header.top .sub{color:var(--muted);font-size:13.5px}
+header.top .spacer{flex:1}
+.mono{font-family:'Cascadia Mono',Consolas,monospace}
+b.sess{color:var(--text)}
+span.gap{display:inline-block;margin-left:10px;padding:1px 8px;border-radius:999px;background:#2b2109;color:var(--yellow);font-size:11px}
+
+.regime{margin-top:18px;border-radius:8px;padding:15px 18px;border:1px solid var(--border);
+  background:var(--panel);display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.regime.on{border-left:4px solid var(--green)}
+.regime.off{border-left:4px solid var(--red)}
+.regime .state{font-size:19px;font-weight:700;letter-spacing:.02em}
+.regime.on .state{color:var(--green)}.regime.off .state{color:var(--red)}
+.regime .detail{color:var(--muted);font-size:13px}
+.regime .chk{display:inline-block;margin-right:12px}
+.regime .y{color:var(--green)}.regime .n{color:var(--red)}
+
+.caveat{margin-top:14px;border:1px solid #4a3a12;background:#221a09;border-radius:8px;
+  padding:13px 17px;font-size:13.5px;color:#e8d5a8}
+.caveat b{color:var(--yellow)}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(122px,1fr));gap:1px;
+  background:var(--border);border:1px solid var(--border);border-radius:8px;
+  overflow:hidden;margin-top:16px}
+.stats div{background:var(--panel);padding:11px 13px}
+.stats .k{font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
+.stats .v{font-size:21px;font-weight:700;margin-top:3px}
+
+table.grid{min-width:760px}
+table.grid th{position:sticky;top:0;background:var(--panel2);z-index:1}
+table.grid td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+table.grid td.n{font-family:'Cascadia Mono',Consolas,monospace;white-space:nowrap;
+  font-variant-numeric:tabular-nums}
+table.grid td.tk{font-weight:700;font-size:15px}
+table.grid td.buy{color:var(--green);font-weight:700}
+table.grid td.stop{color:var(--red);font-weight:700}
+table.grid td.tgt{color:var(--purple)}
+table.grid td.pos{color:var(--green)}table.grid td.neg{color:var(--red)}
+table.grid td.yes{color:var(--text)}table.grid td.no{color:var(--muted)}
+table.grid td.rule{color:var(--muted);font-size:12.5px}
+span.sub2{display:block;font-size:11px;color:var(--muted);font-weight:400}
+td.sub3{color:var(--muted);font-size:12.5px;white-space:normal}
+span.mk{float:right;margin-left:10px;font-weight:700}
+td.yes span.mk{color:var(--green)}td.no span.mk{color:var(--red)}
+table.crit th.ck{text-align:right}
+tr.grp td{background:var(--panel2);font-size:10.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--muted);font-weight:700;padding:7px 12px}
+p.tnote{max-width:none;color:var(--muted);font-size:12.5px;margin:10px 0 0;line-height:1.6}
+p.tnote b{color:var(--text)}
+span.mine{background:#2b2109;color:var(--yellow);padding:1px 6px;border-radius:4px;
+  font-size:10.5px;font-family:'Cascadia Mono',Consolas,monospace}
+.verdictbox{margin-top:14px;border:1px solid var(--border);border-left:4px solid var(--red);
+  background:var(--panel);border-radius:8px;padding:6px 0;display:grid;gap:1px}
+.vrow{padding:9px 18px;display:grid;grid-template-columns:190px 120px 1fr;gap:12px;
+  align-items:baseline}
+.vrow .k{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.vrow .v{font-family:'Cascadia Mono',Consolas,monospace;font-size:17px;font-weight:700}
+.vrow .v.neg{color:var(--red)}.vrow .v.pos{color:var(--green)}
+.vrow .n{font-size:12.5px;color:var(--muted)}
+@media(max-width:820px){.vrow{grid-template-columns:1fr;gap:2px}}
+h3.sub{margin:26px 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--muted);font-weight:600}
+
+.cards{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:900px){.cards.two{grid-template-columns:1fr 1fr}}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:9px;
+  overflow:hidden}
+.card.cand{border-left:4px solid var(--green)}
+.card.gated{border-left:4px solid var(--red)}
+.card.watch{border-left:4px solid var(--yellow)}
+.card.stale{border-left-color:var(--muted);opacity:.72}
+.card.stale .plan .v.buy{color:var(--muted)}
+.card header{padding:12px 15px 9px;display:flex;flex-wrap:wrap;
+  gap:6px 10px;align-items:baseline;border-bottom:1px solid var(--border)}
+.card .meta{flex:1 1 100%;order:9}
+.card .badges{margin-left:auto}
+.card .tk{font-size:20px;font-weight:700;letter-spacing:.01em}
+.card .px{font-size:15px;color:var(--muted)}
+.card .meta{font-size:12px;color:var(--muted)}
+.chartwrap{padding:6px 10px 0}
+svg.cx{display:block;width:100%;height:auto}
+.basezone{fill:#ffffff;opacity:.045}
+.riskband{fill:var(--red);opacity:.10}
+.bup{fill:var(--green)}.wup{stroke:var(--green);stroke-width:1}
+.bdn{fill:var(--red)}.wdn{stroke:var(--red);stroke-width:1}
+.ma10{fill:none;stroke:var(--yellow);stroke-width:1.3}
+.ma21{fill:none;stroke:var(--blue);stroke-width:1.3}
+.lvbuy{stroke:var(--green);stroke-width:1.5}
+.lvstop{stroke:var(--red);stroke-width:1.4;stroke-dasharray:5 4}
+text.tbuy{fill:var(--green);font-size:10.5px;font-weight:700;
+  font-family:'Cascadia Mono',Consolas,monospace}
+text.tstop{fill:var(--red);font-size:10.5px;font-weight:700;
+  font-family:'Cascadia Mono',Consolas,monospace}
+.mom{padding:4px 15px 0;font-size:12px;color:var(--muted)}
+.why{margin:9px 15px 0;padding:8px 11px;background:var(--panel2);border-radius:6px;
+  font-size:12.5px;color:var(--muted)}
+.plan{margin:11px 15px 0;display:grid;gap:1px;background:var(--border);
+  border:1px solid var(--border);border-radius:7px;overflow:hidden}
+.plan .pl{background:var(--panel2);padding:8px 12px;display:grid;
+  grid-template-columns:104px auto 1fr;gap:11px;align-items:baseline}
+.plan .k{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.plan .v{font-family:'Cascadia Mono',Consolas,monospace;font-size:16px;font-weight:700}
+.plan .v.buy{color:var(--green)}.plan .v.stop{color:var(--red)}
+.plan .v.tgt{color:var(--purple)}
+.plan .n{font-size:12px;color:var(--muted)}
+.manage{margin:9px 15px 14px;font-size:12.5px;color:var(--muted);
+  border-left:2px solid var(--border);padding-left:10px}
+
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;
+  font-weight:700;font-family:'Cascadia Mono',Consolas,monospace}
+.pill.good{background:#0b2b1d;color:var(--green)}
+.pill.ok{background:#0d2436;color:var(--blue)}
+.pill.warn{background:#2b2109;color:var(--yellow)}
+.pill.bad{background:#2d1416;color:var(--red)}
+
+.empty{background:var(--panel);border:1px dashed var(--border);border-radius:9px;
+  padding:22px;color:var(--muted);text-align:center}
+footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--border);
+  color:var(--muted);font-size:12.5px}
+footer p+p{margin-top:8px}
+</style></head><body><div class="wrap">
+
+<header class="top">
+  <h1>Kullam&auml;gi scan</h1>
+  <div class="sub mono">close of Thu 24 Sep 2026 &nbsp;&rarr;&nbsp;
+    orders for <b class="sess">Fri 25 Sep</b></div>
+  <div class="spacer"></div>
+  <div class="sub"><a href="https://claude.ai/code/artifact/b34345be-b35b-4337-aa06-34a0be26c806">the playbook</a> &middot; <a href="https://claude.ai/code/artifact/289410ac-2e27-49d3-a9e1-b44f0c069c11">the backtest</a></div>
+</header>
+
+<div class="regime on">
+  <div class="state">LONG BOOK OPEN</div>
+  <div class="detail">Breakouts and episodic pivots are live. Shorts are governed separately.<br><span class="chk">10&nbsp;EMA&nbsp;&gt;&nbsp;21&nbsp;EMA <span class="y">yes</span></span><span class="chk">10&nbsp;EMA rising <span class="y">yes</span></span><span class="chk">21&nbsp;EMA rising <span class="y">yes</span></span><span class="chk">above 50&nbsp;SMA <span class="y">yes</span></span><br><span class="mono">QQQ 741.1 &middot; 10EMA 729.57 &middot; 21EMA 722.70 &middot; 50SMA 711.88</span></div>
+</div>
+
+<div class="caveat">
+  <b>Read this as a watchlist, not a recommendation.</b> This pattern was placebo-tested on
+  two years of the whole US market and did <b>not</b> beat a matched control
+  (p&nbsp;=&nbsp;0.88); none of 17 hypotheses survived correction, and the 10R+ tail the
+  method depends on never appeared. The scan is here because the rules are objective and
+  worth watching, not because the edge is established. <a href="https://claude.ai/code/artifact/b34345be-b35b-4337-aa06-34a0be26c806">the playbook</a> &middot; <a href="https://claude.ai/code/artifact/289410ac-2e27-49d3-a9e1-b44f0c069c11">the backtest</a>
+</div>
+
+<div class="stats">
+  <div><div class="k">Leaders scanned</div><div class="v">159</div></div>
+  <div><div class="k">Candidates</div><div class="v" style="color:var(--green)">1</div></div>
+  <div><div class="k">Gated out</div><div class="v" style="color:var(--red)">0</div></div>
+  <div><div class="k">Watchlist</div><div class="v" style="color:var(--yellow)">0</div></div>
+  <div><div class="k">Sizing unit</div><div class="v">$10,000</div></div>
+  <div><div class="k">Risk / trade</div><div class="v">0.5%</div></div>
+</div>
+
+<h2>The trade plan</h2><div class="tw"><table class="grid"><thead><tr><th>Ticker</th><th>Close</th><th>Buy stop</th><th>Initial stop</th><th>1R</th><th>Risk&divide;ADR</th><th>Shares</th><th>Cash risk</th><th>Trail sits</th><th>Expected best</th><th>Expected R</th></tr></thead><tbody><tr><td class="tk">ESTC</td><td class="n">91.28</td><td class="n buy">91.46</td><td class="n stop">87.68</td><td class="n">3.78<span class="sub2">4.13%</span></td><td class="n">0.89x<span class="sub2">4.6% ADR</span></td><td class="n">13<span class="sub2">$1,189</span></td><td class="n">$49</td><td class="n">88.89<span class="sub2">10 EMA</span></td><td class="n tgt">101.89<span class="sub2">+2.8R</span></td><td class="n pos">+0.01R<span class="sub2">win 33%</span></td></tr></tbody></table></div><p class="tnote">Buy stop = the trigger bar's high, good for the <b>Fri 25 Sep</b> session. Initial stop = the 3-bar structural low. <b>Half off at the Thu 01 Oct close, then the stop moves to breakeven and the remainder trails the 10&nbsp;EMA, out on the first close below it.</b> <i>Trail sits</i> is where the 10&nbsp;EMA is right now &mdash; it moves every session and it, not a price target, is what ends the trade. <i>Expected best</i> is the mean 20-session maximum favourable excursion measured over 113 backtested trades (2.47&times; ADR) &mdash; a distribution, not a target. <i>Expected R</i> is the measured mean for that risk-width bucket; the table below is where it comes from.</p>
+<h2>Every selection criterion, and where each candidate landed</h2><div class="tw"><table class="grid crit"><thead><tr><th>Criterion</th><th>Rule</th><th class="ck">ESTC</th></tr></thead><tbody><tr class="grp"><td colspan="3">Universe</td></tr><tr><td>Price</td><td class="rule">&ge; $5</td><td class="n yes">$91.28<span class="mk">&#10003;</span></td></tr><tr><td>Dollar volume, 20d median</td><td class="rule">&ge; $20M</td><td class="n yes">$199M<span class="mk">&#10003;</span></td></tr><tr><td>ADR%, 20d</td><td class="rule">&ge; 3%</td><td class="n yes">4.62%<span class="mk">&#10003;</span></td></tr><tr><td>ADR%, upper bound</td><td class="rule">&le; 15% <span class='mine'>added</span></td><td class="n yes">4.62%<span class="mk">&#10003;</span></td></tr><tr><td>Price history</td><td class="rule">&ge; 130 sessions</td><td class="n yes">518<span class="mk">&#10003;</span></td></tr><tr class="grp"><td colspan="3">Leadership</td></tr><tr><td>Momentum rank, 1 month</td><td class="rule">top 7%</td><td class="n no">87th<span class="mk">&#10007;</span></td></tr><tr><td>Momentum rank, 3 month</td><td class="rule">top 7%</td><td class="n yes">94th<span class="mk">&#10003;</span></td></tr><tr><td>Momentum rank, 6 month</td><td class="rule">top 7%</td><td class="n no">88th<span class="mk">&#10007;</span></td></tr><tr><td>Leader on at least one horizon</td><td class="rule">any of the three</td><td class="n yes">best 94th<span class="mk">&#10003;</span></td></tr><tr class="grp"><td colspan="3">Market regime (long switch)</td></tr><tr><td>QQQ 10 EMA &gt; 21 EMA</td><td class="rule">yes</td><td class="n yes">729.57 vs 722.70<span class="mk">&#10003;</span></td></tr><tr><td>10 EMA rising over 5 sessions</td><td class="rule">yes</td><td class="n yes">yes<span class="mk">&#10003;</span></td></tr><tr><td>21 EMA rising over 5 sessions</td><td class="rule">yes</td><td class="n yes">yes<span class="mk">&#10003;</span></td></tr><tr><td>QQQ above the 50 SMA</td><td class="rule">yes</td><td class="n yes">741.10 vs 711.88<span class="mk">&#10003;</span></td></tr><tr><td>Long book open</td><td class="rule">all four above</td><td class="n yes">OPEN<span class="mk">&#10003;</span></td></tr><tr class="grp"><td colspan="3">Prior move and base</td></tr><tr><td>Close above its own 50 SMA</td><td class="rule">yes</td><td class="n yes">91.28 vs 79.05<span class="mk">&#10003;</span></td></tr><tr><td>Thrust into the peak</td><td class="rule">&ge; 30% within 25 sessions</td><td class="n yes">+70%<span class="mk">&#10003;</span></td></tr><tr><td>Peak inside the lookback</td><td class="rule">last 63 sessions</td><td class="n yes">18 sessions ago<span class="mk">&#10003;</span></td></tr><tr><td>Base length</td><td class="rule">10&ndash;50 sessions</td><td class="n yes">18 sessions<span class="mk">&#10003;</span></td></tr><tr><td>Not already broken out</td><td class="rule">trigger high &le; peak high</td><td class="n yes">91.46 vs 108.00<span class="mk">&#10003;</span></td></tr><tr><td>Higher lows in the base</td><td class="rule">recent half above older half</td><td class="n yes">yes<span class="mk">&#10003;</span></td></tr><tr><td>Range contracting</td><td class="rule">recent half true range lower</td><td class="n yes">yes<span class="mk">&#10003;</span></td></tr><tr><td>Volume drying up</td><td class="rule">last 5d &lt; 0.85x the base mean</td><td class="n yes">yes<span class="mk">&#10003;</span></td></tr><tr><td>Surfing the 10 / 21 EMA</td><td class="rule">&ge; 60% of base closes above</td><td class="n yes">72%<span class="mk">&#10003;</span></td></tr><tr class="grp"><td colspan="3">Trigger bar</td></tr><tr><td>Range is tight</td><td class="rule">&le; 0.6x ATR(20)</td><td class="n yes">0.41x<span class="mk">&#10003;</span></td></tr><tr><td>Volume is quiet</td><td class="rule">&le; 0.8x the 30d average</td><td class="n yes">0.57x<span class="mk">&#10003;</span></td></tr><tr class="grp"><td colspan="3">Risk gate</td></tr><tr><td>Risk as % of price</td><td class="rule">no fixed rule</td><td class="n yes">4.13%<span class="mk">&#10003;</span></td></tr><tr><td>Risk &divide; ADR</td><td class="rule">&le; 1x</td><td class="n yes">0.89x<span class="mk">&#10003;</span></td></tr></tbody></table></div><p class="tnote">Built from the same dicts the scan uses to decide, so this audit cannot drift from the filter that produced it. A cross on a momentum row is not a rejection &mdash; leadership requires only <b>one</b> of the three horizons. Rows tagged <span class="mine">added</span> are mine, not his.</p>
+<h2>What the method measurably did &mdash; 113 trades, 2024-08-30 to 2026-09-04</h2><div class="tw"><table class="grid"><thead><tr><th>How the trade ended</th><th>Share</th><th>Mean R</th><th>Median days</th><th></th></tr></thead><tbody><tr><td>Initial stop hit</td><td class="n">72.6%</td><td class="n neg">-1.04R</td><td class="n">2</td><td class="sub3">the modal outcome: it fails almost immediately</td></tr><tr><td>Breakeven stop after the day-4 partial</td><td class="n">14.2%</td><td class="n pos">+0.16R</td><td class="n">5</td><td class="sub3">half was banked, the rest scratched</td></tr><tr><td>Trailed out on the first close below the 10 EMA</td><td class="n">9.7%</td><td class="n pos">+3.07R</td><td class="n">11</td><td class="sub3">the only outcome that pays properly</td></tr><tr><td>Still open at the 120-session cap</td><td class="n">3.5%</td><td class="n pos">+1.76R</td><td class="n">10</td><td class="sub3">rare</td></tr></tbody></table></div><div class="verdictbox"><div class="vrow"><span class="k">Average expected R</span><span class="v neg">-0.371R</span><span class="n">95% CI -0.639 to -0.057 &mdash; the interval does not include zero</span></div><div class="vrow"><span class="k">Win rate</span><span class="v">20.4%</span><span class="n">matches his claimed 25%; the median trade is -1.02R</span></div><div class="vrow"><span class="k">Reached 3R / 5R / 10R</span><span class="v">4.4% / 1.8% / 0.0%</span><span class="n">best single trade +7.74R &mdash; the 10R+ tail the arithmetic depends on never appeared</span></div><div class="vrow"><span class="k">Holding period</span><span class="v">2d</span><span class="n">winners 8d, losers 2d</span></div><div class="vrow"><span class="k">vs a matched placebo</span><span class="v neg">p = 0.88</span><span class="n">0 of 17 hypotheses survived correction</span></div></div><h3 class="sub">Expected R by risk width &mdash; this runs against the method's own advice</h3><div class="tw"><table class="grid"><thead><tr><th>Risk &divide; ADR</th><th>n</th><th>Mean R</th><th>Win</th><th>Median days</th></tr></thead><tbody><tr><td>&le; 0.50x ADR</td><td class="n">23</td><td class="n neg">-0.61R</td><td class="n">13.0%</td><td class="n">2</td></tr><tr><td>0.50 &ndash; 0.75x</td><td class="n">63</td><td class="n neg">-0.45R</td><td class="n">17.5%</td><td class="n">2</td></tr><tr><td>0.75 &ndash; 1.00x</td><td class="n">27</td><td class="n pos">+0.01R</td><td class="n">33.3%</td><td class="n">4</td></tr></tbody></table></div><p class="tnote">Kullam&auml;gi says to target a stop of &frac13;&ndash;&frac12; of ADR. Measured, the <b>tightest</b> bucket was the worst and the widest was the only one near breakeven &mdash; which is what slippage and commission do to a small stop. The pill on each card therefore reports the measured expectation for that width instead of calling a tight stop good.</p>
+
+<h2>Entry candidates &nbsp;<span class="mono">1</span></h2><div class="cards">
+  <article class="card cand">
+    <header>
+      <div class="tk">ESTC</div>
+      <div class="px">91.28</div>
+      <div class="meta">ADR 4.6% &middot; $199M/day
+        &middot; base 18d &middot; thrust +70%</div>
+      <div class="badges"><span class="pill ok">0.89x ADR &middot; measured +0.01R</span></div>
+    </header>
+    <div class="chartwrap"><svg viewBox="0 0 560 190" class="cx" role="img" aria-label="Daily chart with the consolidation shaded, the buy-stop pivot and the initial stop marked.">
+<rect class="riskband" x="6" y="62.8" width="468.0" height="10.8"/>
+<rect class="basezone" x="346.2" y="12" width="128.6" height="162.0"/>
+<polyline class="ma21" points="9.3,154.2 16.0,154.4 22.7,154.5 29.4,154.6 36.1,154.7 42.8,154.8 49.5,156.2 56.1,156.9 62.8,157.2 69.5,157.6 76.2,157.5 82.9,157.5 89.6,157.4 96.3,157.1 102.9,156.7 109.6,155.7 116.3,155.4 123.0,154.5 129.7,153.7 136.4,153.0 143.1,152.4 149.7,152.0 156.4,151.3 163.1,151.3 169.8,151.8 176.5,152.5 183.2,152.9 189.9,152.5 196.5,151.9 203.2,150.8 209.9,149.9 216.6,148.6 223.3,146.7 230.0,144.3 236.7,142.5 243.3,140.9 250.0,138.0 256.7,135.1 263.4,132.4 270.1,129.8 276.8,125.1 283.5,120.7 290.1,117.5 296.8,114.2 303.5,110.6 310.2,107.7 316.9,105.0 323.6,103.3 330.3,102.5 336.9,102.0 343.6,100.5 350.3,94.9 357.0,90.4 363.7,87.6 370.4,85.8 377.1,82.5 383.7,80.7 390.4,79.8 397.1,79.5 403.8,80.1 410.5,80.6 417.2,80.6 423.9,80.6 430.5,80.7 437.2,79.7 443.9,79.3 450.6,78.3 457.3,77.4 464.0,76.2 470.7,75.0"/>
+<polyline class="ma10" points="9.3,149.4 16.0,150.6 22.7,151.5 29.4,152.3 36.1,152.8 42.8,153.4 49.5,156.5 56.1,157.7 62.8,158.3 69.5,158.8 76.2,158.4 82.9,158.3 89.6,158.0 96.3,157.3 102.9,156.3 109.6,154.5 116.3,154.0 123.0,152.5 129.7,151.2 136.4,150.3 143.1,149.6 149.7,149.3 156.4,148.4 163.1,149.0 169.8,150.3 176.5,152.1 183.2,152.8 189.9,152.1 196.5,151.1 203.2,149.0 209.9,147.4 216.6,145.3 223.3,142.1 230.0,138.2 236.7,135.8 243.3,133.6 250.0,129.2 256.7,125.0 263.4,121.5 270.1,118.2 276.8,111.0 283.5,104.7 290.1,101.2 296.8,97.6 303.5,93.4 310.2,90.7 316.9,88.5 323.6,88.1 330.3,89.2 336.9,90.7 343.6,89.6 350.3,80.4 357.0,74.0 363.7,71.5 370.4,70.9 377.1,67.0 383.7,66.1 390.4,67.0 397.1,68.8 403.8,71.8 410.5,74.4 417.2,75.5 423.9,76.5 430.5,77.3 437.2,76.0 443.9,75.9 450.6,74.4 457.3,73.5 464.0,71.6 470.7,70.1"/>
+<line class="wdn" x1="9.3" y1="144.4" x2="9.3" y2="154.0"/>
+<rect class="bdn" x="7.3" y="146.2" width="4.1" height="5.9"/>
+<line class="wdn" x1="16.0" y1="149.7" x2="16.0" y2="157.8"/>
+<rect class="bdn" x="14.0" y="153.3" width="4.1" height="3.1"/>
+<line class="wup" x1="22.7" y1="154.8" x2="22.7" y2="164.0"/>
+<rect class="bup" x="20.6" y="155.3" width="4.1" height="2.8"/>
+<line class="wup" x1="29.4" y1="151.0" x2="29.4" y2="162.1"/>
+<rect class="bup" x="27.3" y="156.0" width="4.1" height="2.1"/>
+<line class="wdn" x1="36.1" y1="151.7" x2="36.1" y2="156.5"/>
+<rect class="bdn" x="34.0" y="155.2" width="4.1" height="1.0"/>
+<line class="wup" x1="42.8" y1="153.5" x2="42.8" y2="158.8"/>
+<rect class="bup" x="40.7" y="156.0" width="4.1" height="1.0"/>
+<line class="wdn" x1="49.5" y1="161.6" x2="49.5" y2="172.2"/>
+<rect class="bdn" x="47.4" y="161.8" width="4.1" height="8.8"/>
+<line class="wup" x1="56.1" y1="161.1" x2="56.1" y2="169.8"/>
+<rect class="bup" x="54.1" y="163.1" width="4.1" height="6.7"/>
+<line class="wdn" x1="62.8" y1="155.6" x2="62.8" y2="161.4"/>
+<rect class="bdn" x="60.8" y="159.5" width="4.1" height="1.6"/>
+<line class="wup" x1="69.5" y1="159.3" x2="69.5" y2="163.7"/>
+<rect class="bup" x="67.4" y="160.9" width="4.1" height="2.6"/>
+<line class="wdn" x1="76.2" y1="153.0" x2="76.2" y2="157.8"/>
+<rect class="bdn" x="74.1" y="156.1" width="4.1" height="1.0"/>
+<line class="wdn" x1="82.9" y1="153.0" x2="82.9" y2="159.6"/>
+<rect class="bdn" x="80.8" y="156.8" width="4.1" height="1.2"/>
+<line class="wup" x1="89.6" y1="156.4" x2="89.6" y2="162.2"/>
+<rect class="bup" x="87.5" y="156.5" width="4.1" height="4.4"/>
+<line class="wdn" x1="96.3" y1="148.7" x2="96.3" y2="158.0"/>
+<rect class="bdn" x="94.2" y="152.9" width="4.1" height="1.0"/>
+<line class="wup" x1="102.9" y1="151.2" x2="102.9" y2="158.7"/>
+<rect class="bup" x="100.9" y="152.1" width="4.1" height="5.8"/>
+<line class="wup" x1="109.6" y1="144.6" x2="109.6" y2="157.1"/>
+<rect class="bup" x="107.6" y="146.5" width="4.1" height="9.8"/>
+<line class="wdn" x1="116.3" y1="141.1" x2="116.3" y2="153.1"/>
+<rect class="bdn" x="114.2" y="142.4" width="4.1" height="9.3"/>
+<line class="wup" x1="123.0" y1="143.5" x2="123.0" y2="150.8"/>
+<rect class="bup" x="120.9" y="145.4" width="4.1" height="3.6"/>
+<line class="wup" x1="129.7" y1="144.0" x2="129.7" y2="153.9"/>
+<rect class="bup" x="127.6" y="145.8" width="4.1" height="7.1"/>
+<line class="wdn" x1="136.4" y1="139.2" x2="136.4" y2="147.8"/>
+<rect class="bdn" x="134.3" y="142.6" width="4.1" height="3.4"/>
+<line class="wdn" x1="143.1" y1="143.4" x2="143.1" y2="150.4"/>
+<rect class="bdn" x="141.0" y="146.1" width="4.1" height="1.0"/>
+<line class="wup" x1="149.7" y1="145.4" x2="149.7" y2="149.5"/>
+<rect class="bup" x="147.7" y="147.8" width="4.1" height="1.0"/>
+<line class="wup" x1="156.4" y1="143.2" x2="156.4" y2="151.5"/>
+<rect class="bup" x="154.4" y="144.6" width="4.1" height="6.1"/>
+<line class="wdn" x1="163.1" y1="142.6" x2="163.1" y2="154.4"/>
+<rect class="bdn" x="161.0" y="150.3" width="4.1" height="1.5"/>
+<line class="wdn" x1="169.8" y1="153.2" x2="169.8" y2="157.2"/>
+<rect class="bdn" x="167.7" y="153.3" width="4.1" height="2.8"/>
+<line class="wdn" x1="176.5" y1="153.9" x2="176.5" y2="163.6"/>
+<rect class="bdn" x="174.4" y="154.4" width="4.1" height="5.6"/>
+<line class="wup" x1="183.2" y1="155.3" x2="183.2" y2="159.1"/>
+<rect class="bup" x="181.1" y="156.1" width="4.1" height="1.8"/>
+<line class="wup" x1="189.9" y1="146.1" x2="189.9" y2="153.8"/>
+<rect class="bup" x="187.8" y="148.8" width="4.1" height="3.8"/>
+<line class="wup" x1="196.5" y1="143.5" x2="196.5" y2="151.7"/>
+<rect class="bup" x="194.5" y="146.4" width="4.1" height="1.4"/>
+<line class="wup" x1="203.2" y1="135.1" x2="203.2" y2="146.0"/>
+<rect class="bup" x="201.2" y="139.7" width="4.1" height="6.0"/>
+<line class="wdn" x1="209.9" y1="138.4" x2="209.9" y2="144.0"/>
+<rect class="bdn" x="207.8" y="139.6" width="4.1" height="1.0"/>
+<line class="wup" x1="216.6" y1="135.1" x2="216.6" y2="143.3"/>
+<rect class="bup" x="214.5" y="135.9" width="4.1" height="6.1"/>
+<line class="wup" x1="223.3" y1="124.5" x2="223.3" y2="132.4"/>
+<rect class="bup" x="221.2" y="127.5" width="4.1" height="4.9"/>
+<line class="wup" x1="230.0" y1="119.8" x2="230.0" y2="132.3"/>
+<rect class="bup" x="227.9" y="120.9" width="4.1" height="9.7"/>
+<line class="wdn" x1="236.7" y1="115.8" x2="236.7" y2="125.3"/>
+<rect class="bdn" x="234.6" y="116.4" width="4.1" height="8.3"/>
+<line class="wup" x1="243.3" y1="123.4" x2="243.3" y2="134.0"/>
+<rect class="bup" x="241.3" y="124.0" width="4.1" height="7.9"/>
+<line class="wup" x1="250.0" y1="108.3" x2="250.0" y2="120.5"/>
+<rect class="bup" x="248.0" y="109.3" width="4.1" height="9.7"/>
+<line class="wup" x1="256.7" y1="103.7" x2="256.7" y2="113.1"/>
+<rect class="bup" x="254.6" y="105.9" width="4.1" height="6.5"/>
+<line class="wup" x1="263.4" y1="102.9" x2="263.4" y2="108.9"/>
+<rect class="bup" x="261.3" y="105.8" width="4.1" height="1.0"/>
+<line class="wup" x1="270.1" y1="102.9" x2="270.1" y2="110.7"/>
+<rect class="bup" x="268.0" y="103.5" width="4.1" height="6.6"/>
+<line class="wup" x1="276.8" y1="76.3" x2="276.8" y2="102.5"/>
+<rect class="bup" x="274.7" y="78.2" width="4.1" height="23.7"/>
+<line class="wup" x1="283.5" y1="73.8" x2="283.5" y2="84.6"/>
+<rect class="bup" x="281.4" y="76.4" width="4.1" height="1.9"/>
+<line class="wdn" x1="290.1" y1="77.3" x2="290.1" y2="89.2"/>
+<rect class="bdn" x="288.1" y="79.7" width="4.1" height="5.9"/>
+<line class="wup" x1="296.8" y1="76.7" x2="296.8" y2="85.5"/>
+<rect class="bup" x="294.8" y="81.2" width="4.1" height="2.6"/>
+<line class="wup" x1="303.5" y1="72.8" x2="303.5" y2="82.6"/>
+<rect class="bup" x="301.4" y="74.5" width="4.1" height="6.7"/>
+<line class="wdn" x1="310.2" y1="72.1" x2="310.2" y2="80.4"/>
+<rect class="bdn" x="308.1" y="73.0" width="4.1" height="5.7"/>
+<line class="wup" x1="316.9" y1="77.7" x2="316.9" y2="85.4"/>
+<rect class="bup" x="314.8" y="78.5" width="4.1" height="1.5"/>
+<line class="wdn" x1="323.6" y1="78.2" x2="323.6" y2="87.0"/>
+<rect class="bdn" x="321.5" y="79.2" width="4.1" height="6.9"/>
+<line class="wdn" x1="330.3" y1="86.0" x2="330.3" y2="97.0"/>
+<rect class="bdn" x="328.2" y="86.9" width="4.1" height="7.3"/>
+<line class="wup" x1="336.9" y1="92.8" x2="336.9" y2="98.9"/>
+<rect class="bup" x="334.9" y="97.6" width="4.1" height="1.0"/>
+<line class="wup" x1="343.6" y1="79.0" x2="343.6" y2="89.7"/>
+<rect class="bup" x="341.6" y="84.8" width="4.1" height="3.1"/>
+<line class="wdn" x1="350.3" y1="15.7" x2="350.3" y2="47.5"/>
+<rect class="bdn" x="348.2" y="27.4" width="4.1" height="11.3"/>
+<line class="wdn" x1="357.0" y1="31.6" x2="357.0" y2="51.7"/>
+<rect class="bdn" x="354.9" y="44.2" width="4.1" height="1.3"/>
+<line class="wdn" x1="363.7" y1="47.0" x2="363.7" y2="61.0"/>
+<rect class="bdn" x="361.6" y="50.5" width="4.1" height="9.6"/>
+<line class="wdn" x1="370.4" y1="57.0" x2="370.4" y2="68.8"/>
+<rect class="bdn" x="368.3" y="61.2" width="4.1" height="6.9"/>
+<line class="wup" x1="377.1" y1="48.5" x2="377.1" y2="61.2"/>
+<rect class="bup" x="375.0" y="49.5" width="4.1" height="11.8"/>
+<line class="wdn" x1="383.7" y1="49.9" x2="383.7" y2="62.8"/>
+<rect class="bdn" x="381.7" y="52.3" width="4.1" height="9.5"/>
+<line class="wdn" x1="390.4" y1="65.3" x2="390.4" y2="72.4"/>
+<rect class="bdn" x="388.4" y="67.0" width="4.1" height="4.4"/>
+<line class="wdn" x1="397.1" y1="70.2" x2="397.1" y2="78.3"/>
+<rect class="bdn" x="395.0" y="71.5" width="4.1" height="5.2"/>
+<line class="wdn" x1="403.8" y1="72.0" x2="403.8" y2="85.7"/>
+<rect class="bdn" x="401.7" y="78.3" width="4.1" height="7.2"/>
+<line class="wdn" x1="410.5" y1="81.9" x2="410.5" y2="89.3"/>
+<rect class="bdn" x="408.4" y="85.5" width="4.1" height="1.0"/>
+<line class="wup" x1="417.2" y1="78.4" x2="417.2" y2="86.8"/>
+<rect class="bup" x="415.1" y="80.9" width="4.1" height="1.7"/>
+<line class="wup" x1="423.9" y1="73.6" x2="423.9" y2="86.0"/>
+<rect class="bup" x="421.8" y="80.7" width="4.1" height="4.4"/>
+<line class="wup" x1="430.5" y1="77.5" x2="430.5" y2="85.0"/>
+<rect class="bup" x="428.5" y="81.1" width="4.1" height="3.6"/>
+<line class="wup" x1="437.2" y1="67.7" x2="437.2" y2="84.6"/>
+<rect class="bup" x="435.2" y="69.9" width="4.1" height="9.9"/>
+<line class="wdn" x1="443.9" y1="67.7" x2="443.9" y2="76.8"/>
+<rect class="bdn" x="441.8" y="68.4" width="4.1" height="7.2"/>
+<line class="wup" x1="450.6" y1="66.6" x2="450.6" y2="75.6"/>
+<rect class="bup" x="448.5" y="67.8" width="4.1" height="6.3"/>
+<line class="wdn" x1="457.3" y1="63.4" x2="457.3" y2="73.6"/>
+<rect class="bdn" x="455.2" y="64.1" width="4.1" height="5.1"/>
+<line class="wup" x1="464.0" y1="62.6" x2="464.0" y2="70.4"/>
+<rect class="bup" x="461.9" y="63.3" width="4.1" height="5.4"/>
+<line class="wup" x1="470.7" y1="62.8" x2="470.7" y2="68.8"/>
+<rect class="bup" x="468.6" y="63.3" width="4.1" height="1.0"/>
+<line class="lvbuy" x1="6" y1="62.8" x2="474.0" y2="62.8"/>
+<line class="lvstop" x1="6" y1="73.6" x2="474.0" y2="73.6"/>
+<text class="tbuy" x="480" y="65.7">BUY 91.46</text>
+<text class="tstop" x="480" y="77.7">STOP 87.68</text>
+</svg></div>
+    <div class="mom">momentum rank &nbsp;1m 87th &middot; 3m 94th &middot; 6m 88th</div>
+    
+      <div class="plan">
+        <div class="pl"><span class="k">Buy stop</span><span class="v buy">91.46</span>
+          <span class="n">+0.20% from the close</span></div>
+        <div class="pl"><span class="k">Initial stop</span><span class="v stop">87.68</span>
+          <span class="n">3.78/share &middot; 4.13% of price</span></div>
+        <div class="pl"><span class="k">Size</span><span class="v">13 sh</span>
+          <span class="n">$1,189 pos &middot; $49 at risk</span></div>
+        <div class="pl"><span class="k">10R would be</span><span class="v tgt">129.26</span>
+          <span class="n">not a target &mdash; the trail decides the exit</span></div>
+      </div>
+      <div class="manage">Half off at the day-4 close &rarr; stop to breakeven
+        &rarr; trail the 10&nbsp;EMA &rarr; out on the first close below it.</div>
+  </article></div>
+<h2>Gated out by the ADR ceiling</h2><div class="empty">Nothing was rejected on risk width tonight.</div>
+<h2>Watchlist &mdash; base intact, trigger not yet printed</h2><div class="empty">No bases forming inside the leader set.</div>
+
+<footer>
+  <p><b>How this is built.</b> Whole-US-market daily bars, point-in-time. Universe: close
+  &ge; $5, 20-day median dollar volume &ge; $20M,
+  ADR between 3% and 15%, at least 130 sessions of history, top
+  7% on 1/3/6-month return. Pattern: a &ge;30% thrust
+  within 25 sessions, then a 10&ndash;50 session base
+  under that peak with higher lows, contracting range and volume drying up, and a trigger
+  bar whose range is &le;0.6&times;ATR on &le;0.8&times;
+  average volume. Buy stop at that bar's high; initial stop at the 3-bar structural low;
+  risk must be &le;1&times; ADR.</p>
+  <p><b>One addition of mine.</b> The upper ADR bound of 15% is not in
+  Kullam&auml;gi's rules &mdash; he only says low ADR is trash and wants 3&ndash;6%+. Without a
+  ceiling the scan surfaces names with a 35% average daily range, where even 0.3&times;ADR is
+  an 11% stop. Re-running the backtest with this bound moved mean R from
+  &minus;0.394 to &minus;0.371 (and to &minus;0.222 at a 10% bound) &mdash; less bleed, still
+  negative, and chosen after seeing the data. Treat it as a sanity filter, not an edge.</p>
+  <p><b>No look-ahead.</b> Every test reads bars up to and including the as-of close. The
+  regime is evaluated on the as-of session, not the entry session.</p>
+  <p>Generated 2026-09-25 07:00 UTC. Share counts are quoted <b>per $10,000 of equity</b> at
+  0.5% risk with a 25% per-name cap, whole shares &mdash; a sizing
+  yardstick, not anyone's account. Educational research, not advice.</p>
+</footer>
+</div></body></html>
