@@ -1,12 +1,11 @@
 {
-  "asof": "2026-09-28",
-  "page": "scan_2026-09-28.html",
-  "candidates": 3,
+  "asof": "2026-09-29",
+  "page": "scan_2026-09-29.html",
+  "candidates": 2,
   "regime_on": true,
-  "entry_session": "2026-09-29",
+  "entry_session": "2026-09-30",
   "tickers": [
-    "HURN",
-    "OKLL",
-    "PLSE"
+    "BLSH",
+    "OKLL"
   ]
 }
