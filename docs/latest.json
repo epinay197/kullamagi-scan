@@ -1,8 +1,10 @@
 {
-  "asof": "2026-11-06",
-  "page": "scan_2026-11-06.html",
-  "candidates": 0,
+  "asof": "2026-11-09",
+  "page": "scan_2026-11-09.html",
+  "candidates": 1,
   "regime_on": false,
-  "entry_session": "2026-11-09",
-  "tickers": []
+  "entry_session": "2026-11-10",
+  "tickers": [
+    "INTA"
+  ]
 }
