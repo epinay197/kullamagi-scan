@@ -1,8 +1,11 @@
 {
-  "asof": "2026-11-11",
-  "page": "scan_2026-11-11.html",
-  "candidates": 0,
+  "asof": "2026-11-12",
+  "page": "scan_2026-11-12.html",
+  "candidates": 2,
   "regime_on": false,
-  "entry_session": "2026-11-12",
-  "tickers": []
+  "entry_session": "2026-11-13",
+  "tickers": [
+    "KNSA",
+    "TDOC"
+  ]
 }
