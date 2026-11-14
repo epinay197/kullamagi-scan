@@ -1,11 +1,15 @@
 {
-  "asof": "2026-11-12",
-  "page": "scan_2026-11-12.html",
-  "candidates": 2,
+  "asof": "2026-11-13",
+  "page": "scan_2026-11-13.html",
+  "candidates": 6,
   "regime_on": false,
-  "entry_session": "2026-11-13",
+  "entry_session": "2026-11-16",
   "tickers": [
-    "KNSA",
-    "TDOC"
+    "MRNA",
+    "DXC",
+    "TDOC",
+    "ACN",
+    "INTA",
+    "CRL"
   ]
 }
