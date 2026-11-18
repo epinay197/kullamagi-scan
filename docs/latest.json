@@ -1,14 +1,11 @@
 {
-  "asof": "2026-11-16",
-  "page": "scan_2026-11-16.html",
-  "candidates": 5,
+  "asof": "2026-11-17",
+  "page": "scan_2026-11-17.html",
+  "candidates": 2,
   "regime_on": false,
-  "entry_session": "2026-11-17",
+  "entry_session": "2026-11-18",
   "tickers": [
-    "MRNA",
-    "DXC",
-    "TDOC",
-    "CRL",
-    "BLKB"
+    "GKOS",
+    "CRL"
   ]
 }
