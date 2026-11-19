@@ -1,11 +1,11 @@
 {
-  "asof": "2026-11-17",
-  "page": "scan_2026-11-17.html",
+  "asof": "2026-11-18",
+  "page": "scan_2026-11-18.html",
   "candidates": 2,
   "regime_on": false,
-  "entry_session": "2026-11-18",
+  "entry_session": "2026-11-19",
   "tickers": [
-    "GKOS",
+    "HRI",
     "CRL"
   ]
 }
